@@ -10,8 +10,9 @@ def welcome(message):
     #keybord
     markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
     item1 = types.KeyboardButton("Чел ты")
+    item2 = types.KeyboardButton("Какой сегодня праздник?")
 
-    markup1.add(item1)
+    markup1.add(item1, item2)
 
     #Hello
     bot.send_message(message.chat.id, "Приветствую, {0.first_name}!\nЯ - <b>{1.first_name}</b>, развлекательно-новостной бот.".format(message.from_user, bot.get_me()),
@@ -20,7 +21,6 @@ def welcome(message):
 @bot.message_handler(content_types=['text'])
 def Answer(message):
     if message.text == 'Чел ты':
-
         markup1 = types.InlineKeyboardMarkup(row_width=2)
         item1 = types.InlineKeyboardButton("Не понял", callback_data='not_understand')
         item2 = types.InlineKeyboardButton("Ты это про себя?", callback_data='about_about')
@@ -28,6 +28,8 @@ def Answer(message):
         markup1.add(item1, item2)
 
         bot.send_message(message.chat.id, 'Сам такой', reply_markup=markup1)
+    elif message.text == 'Какой сегодня праздник?':
+        bot.send_message(message.chat.id, 'Сам такой')
     else:
         bot.send_message(message.chat.id, 'Я не знаю такую команду')
 
@@ -41,7 +43,7 @@ def callback_inline(call):
                 bot.send_message(call.message.chat.id, 'Да')
 
             # remote inline buttons
-            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Чел ты",
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Сам такой",
                                   reply_markup=None)
 
             # show alert
