@@ -1,6 +1,7 @@
 import telebot
 import config
-
+import parser
+import random
 from telebot import types
 
 bot = telebot.TeleBot(config.TOKEN)
@@ -10,7 +11,7 @@ def welcome(message):
     #keybord
     markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
     item1 = types.KeyboardButton("Чел ты")
-    item2 = types.KeyboardButton("Какой сегодня праздник?")
+    item2 = types.KeyboardButton("Расскажи анекдот")
 
     markup1.add(item1, item2)
 
@@ -28,8 +29,18 @@ def Answer(message):
         markup1.add(item1, item2)
 
         bot.send_message(message.chat.id, 'Сам такой', reply_markup=markup1)
-    elif message.text == 'Какой сегодня праздник?':
-        bot.send_message(message.chat.id, 'Сам такой')
+    elif message.text == 'Расскажи анекдот':
+        with open('jokes.json') as f:
+            joke = f.read()
+            print(joke)
+          # rand_int = random.randint(1, len(joke))
+           # bot.send_message(message.chat.id,joke[rand_int])
+        #if len(parser.list_of_jokes) == 0:
+            #parser.apply_jokes
+        #else:
+            #rand_int=random.randint(1,10)
+            #bot.send_message(message.chat.id, parser.list_of_jokes[rand_int])
+            #del parser.list_of_jokes[rand_int]
     else:
         bot.send_message(message.chat.id, 'Я не знаю такую команду')
 
