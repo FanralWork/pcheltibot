@@ -1,10 +1,12 @@
 import telebot
 import config
-import parser
+import parsering
 import random
 from telebot import types
 
 bot = telebot.TeleBot(config.TOKEN)
+
+URL = 'https://www.anekdot.ru/random/anekdot/'
 
 @bot.message_handler(commands=['start'])
 def welcome(message):
@@ -30,9 +32,13 @@ def Answer(message):
 
         bot.send_message(message.chat.id, 'Сам такой', reply_markup=markup1)
     elif message.text == 'Расскажи анекдот':
-        with open('jokes.json') as f:
-            joke = f.read()
-            print(joke)
+        joke_list = parsering.parser_of_jokes(URL)
+        random.shuffle(joke_list)
+        bot.send_message(message.chat.id, f'{joke_list[0]}')
+        del joke_list[0]
+        #for i in range(0,len(joke)):
+        #    joke = x[i]
+                #print(joke)
           # rand_int = random.randint(1, len(joke))
            # bot.send_message(message.chat.id,joke[rand_int])
         #if len(parser.list_of_jokes) == 0:
