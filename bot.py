@@ -64,7 +64,7 @@ def Answer(message):
         else:
             bot.send_message(message.chat.id, 'Я не знаю такую команду')
     except Exception as e:
-        print(repr(e))
+        print('User: ', message.from_user.id, f'\nError: ', repr(e))
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
