@@ -6,7 +6,8 @@ from telebot import types
 
 bot = telebot.TeleBot(config.TOKEN)
 
-URL = 'https://www.anekdot.ru/random/anekdot/'
+URL_jokes = 'https://www.anekdot.ru/random/anekdot/'
+URL_news = 'https://vk.com/rhymes'
 
 @bot.message_handler(commands=['start'])
 def welcome(message):
@@ -15,8 +16,9 @@ def welcome(message):
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
         item1 = types.KeyboardButton("Чел ты")
         item2 = types.KeyboardButton("Расскажи анекдот")
+        item3 = types.KeyboardButton("Новости")
 
-        markup1.add(item1, item2)
+        markup1.add(item1, item2, item3)
 
         #Hello
         bot.send_message(message.chat.id, "Приветствую, {0.first_name}!\nЯ - <b>{1.first_name}</b>, развлекательно-новостной бот.".format(message.from_user, bot.get_me()),
@@ -35,20 +37,22 @@ def Answer(message):
             bot.send_message(message.chat.id, 'Сам такой', reply_markup=markup1)
         elif message.text == 'Меню' or message.text == 'Назад':
             markup3 = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            item1 = types.KeyboardButton("Расскажи анекдот")
-            item2 = types.KeyboardButton("Чел ты")
-            markup3.add(item1, item2)
-            bot.send_message(message.chat.id, f"Мои функции: \n- Расскажи анекдот \n- Чел ты", reply_markup=markup3)
-        elif message.text == 'Расскажи анекдот' or message.text == 'Расскажи ещё':
+            item1 = types.KeyboardButton("Чел ты")
+            item2 = types.KeyboardButton("Расскажи анекдот")
+            item3 = types.KeyboardButton("Новости")
+            markup3.add(item1, item2, item3)
+            bot.send_message(message.chat.id, f"Мои функции: \n- Чел ты \n- Расскажи анекдот \n- Новости", reply_markup=markup3)
+        elif message.text == 'Расскажи анекдот' or message.text == 'Расскажи ещё шутку':
             markup2 = types.ReplyKeyboardMarkup(resize_keyboard=True)
             item1 = types.KeyboardButton("Назад")
-            item2 = types.KeyboardButton("Расскажи ещё")
+            item2 = types.KeyboardButton("Расскажи ещё шутку")
 
             markup2.add(item1, item2)
 
-            joke_list = parsering.parser_of_jokes(URL)
+            joke_list = parsering.parser_of_jokes(URL_jokes)
             random.shuffle(joke_list)
             bot.send_message(message.chat.id, f'{joke_list[0]}', reply_markup=markup2)
+            print(joke_list[0])
             del joke_list[0]
             #for i in range(0,len(joke)):
             #    joke = x[i]
@@ -61,6 +65,13 @@ def Answer(message):
                 #rand_int=random.randint(1,10)
                 #bot.send_message(message.chat.id, parser.list_of_jokes[rand_int])
                 #del parser.list_of_jokes[rand_int]
+        elif message.text == 'Новости' or message.text == 'Ещё новости':
+            markup2 = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            item1 = types.KeyboardButton("Назад")
+            item2 = types.KeyboardButton("Ещё новости")
+            markup2.add(item1, item2)
+            news_list = parsering.parser_of_news(URL_news)
+            bot.send_message(message.chat.id, f'{news_list[0].text}', reply_markup=markup2)
         else:
             bot.send_message(message.chat.id, 'Я не знаю такую команду')
     except Exception as e:
