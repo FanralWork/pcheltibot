@@ -52,7 +52,6 @@ def Answer(message):
             joke_list = parsering.parser_of_jokes(URL_jokes)
             random.shuffle(joke_list)
             bot.send_message(message.chat.id, f'{joke_list[0]}', reply_markup=markup2)
-            print(joke_list[0])
             del joke_list[0]
             #for i in range(0,len(joke)):
             #    joke = x[i]
