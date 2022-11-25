@@ -3,6 +3,7 @@ import config
 import parsering
 import random
 from telebot import types
+import json
 
 bot = telebot.TeleBot(config.TOKEN)
 
@@ -69,8 +70,10 @@ def Answer(message):
             item1 = types.KeyboardButton("Назад")
             item2 = types.KeyboardButton("Ещё новости")
             markup2.add(item1, item2)
-            news_list = parsering.parser_of_news(URL_news)
-            bot.send_message(message.chat.id, f'{news_list[0].text}', reply_markup=markup2)
+            with open("news.json", "r",  encoding="utf-8") as read_file:
+                news_title = json.load(read_file)
+            print(news_title)
+            #bot.send_message(message.chat.id, f'{news_title[0].text}', reply_markup=markup2)
         else:
             bot.send_message(message.chat.id, 'Я не знаю такую команду')
     except Exception as e:
