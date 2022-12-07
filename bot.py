@@ -70,15 +70,17 @@ def Answer(message):
             item1 = types.KeyboardButton("Назад")
             item2 = types.KeyboardButton("Ещё новости")
             markup2.add(item1, item2)
-            with open("news.json", "r",  encoding="utf-8") as read_file:
+            with open("news.json", "r", encoding="utf-8") as read_file:
                 news_title = json.load(read_file)
-            if  len(news_title) == 0:
+            print(len(news_title))
+            if len(news_title) == 0:
                 parsering.parser_of_news("https://vk.com/rhymes")
-            else:
-                bot.send_message(message.chat.id, f'{news_title[0].replace("Показать ещё", " ")}', reply_markup=markup2)
-                del news_title[0]
-                with open("news.json", "w", encoding="utf-8") as write_file:
-                    json.dump(news_title, write_file, ensure_ascii=None)
+                with open("news.json", "r", encoding="utf-8") as read_file:
+                    news_title = json.load(read_file)
+            bot.send_message(message.chat.id, f'{news_title[0].replace("Показать ещё", " ")}', reply_markup=markup2)
+            del news_title[0]
+            with open("news.json", "w", encoding="utf-8") as write_file:
+                json.dump(news_title, write_file, ensure_ascii=None)
         else:
             bot.send_message(message.chat.id, 'Я не знаю такую команду')
     except Exception as e:
