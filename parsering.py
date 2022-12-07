@@ -4,10 +4,15 @@ from bs4 import BeautifulSoup as b
 import json
 
 post_text = []
-href_media = []
+post_media = []
+post_video = []
+post_img = []
+href_video = []
+href_photo = []
 global title
 title = []
 global media
+media = []
 
 def parser_of_jokes(url):
     r = requests.get(url)
@@ -25,9 +30,14 @@ def parser_of_news(url):
     with open("news.json", "w", encoding="utf-8") as write_file:
         json.dump(title, write_file, ensure_ascii=None)
     for img in content:
-        #post_img = img.find_all("a", class_="MediaGrid")
-        print(img)
-        #href_media = (f'https://vk.com{post_img[0]["href"]}')
+        post_video = img.find_all("a",class_="thumb_link")
+        post_photo = img.find_all("a", class_="MediaGrid__interactive")
+        if len(post_video) > 0:
+            href_video = (f'https://vk.com{post_video[0]["href"]}')
+            print(href_video)
+        if len(post_photo) > 0:
+            href_photo = (f'https://vk.com{post_photo[0]["href"]}')
+            print(href_photo)
         #print(href_media)
         #media.append(href_media[0].text)
     '''with open("media.json", "w", encoding="utf-8") as write_file:
