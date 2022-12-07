@@ -24,11 +24,12 @@ def parser_of_news(url):
         title.append(post_text[0].text)
     with open("news.json", "w", encoding="utf-8") as write_file:
         json.dump(title, write_file, ensure_ascii=None)
-    '''for img in content:
-        post_img = img.find_all("a", class_="MediaGrid__interactive")
-        href_media = (f'https://vk.com{post_img[0]["href"]}')
-        print(href_media)
-        media.append(href_media[0].text)
-    with open("media.json", "w", encoding="utf-8") as write_file:
-        json.dump(media, write_file, ensure_ascii=None)
-parser_of_news("https://vk.com/rhymes")'''
+    for img in content:
+        #post_img = img.find_all("a", class_="MediaGrid")
+        print(img)
+        #href_media = (f'https://vk.com{post_img[0]["href"]}')
+        #print(href_media)
+        #media.append(href_media[0].text)
+    '''with open("media.json", "w", encoding="utf-8") as write_file:
+        json.dump(media, write_file, ensure_ascii=None)'''
+parser_of_news("https://vk.com/rhymes")

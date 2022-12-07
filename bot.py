@@ -78,6 +78,7 @@ def Answer(message):
                 with open("news.json", "r", encoding="utf-8") as read_file:
                     news_title = json.load(read_file)
             bot.send_message(message.chat.id, f'{news_title[0].replace("Показать ещё", " ")}', reply_markup=markup2)
+            bot.send_photo(message.chat.id,  photo='https://vk.com/photo-28905875_459378582')
             del news_title[0]
             with open("news.json", "w", encoding="utf-8") as write_file:
                 json.dump(news_title, write_file, ensure_ascii=None)
