@@ -21,6 +21,8 @@ def parser_of_jokes(url):
     return [c.text for c in anekdots]
 
 def parser_of_news(url):
+    title = []
+    media = []
     r=requests.get(url)
     html = b(r.content, 'html.parser')
     content = html.find_all("div", class_="wall_item")
