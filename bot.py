@@ -73,15 +73,26 @@ def Answer(message):
             with open("news.json", "r", encoding="utf-8") as read_file:
                 news_title = json.load(read_file)
             print(len(news_title))
+            with open("media.json", "r", encoding="utf-8") as read_file:
+                news_media = json.load(read_file)
+            print(len(news_media))
             if len(news_title) == 0:
                 parsering.parser_of_news("https://vk.com/rhymes")
                 with open("news.json", "r", encoding="utf-8") as read_file:
                     news_title = json.load(read_file)
+                with open("media.json", "r", encoding="utf-8") as read_file:
+                    news_media = json.load(read_file)
             bot.send_message(message.chat.id, f'{news_title[0].replace("Показать ещё", " ")}', reply_markup=markup2)
-            bot.send_photo(message.chat.id,  photo='https://vk.com/photo-28905875_459378582')
+            #if "video" in news_media[0]:
+                #bot.send_video(message.chat.id, "https://youtube.com/shorts/9lyVnzobTYo", reply_markup=markup2)
+            #else:
+            bot.send_photo(message.chat.id, f'{news_media[0]}', reply_markup=markup2)
             del news_title[0]
+            del news_media[0]
             with open("news.json", "w", encoding="utf-8") as write_file:
                 json.dump(news_title, write_file, ensure_ascii=None)
+            with open("media.json", "w", encoding="utf-8") as write_file:
+                json.dump(news_media, write_file, ensure_ascii=None)
         else:
             bot.send_message(message.chat.id, 'Я не знаю такую команду')
     except Exception as e:

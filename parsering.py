@@ -34,12 +34,14 @@ def parser_of_news(url):
         post_photo = img.find_all("a", class_="MediaGrid__interactive")
         if len(post_video) > 0:
             href_video = (f'https://vk.com{post_video[0]["href"]}')
-            print(href_video)
+            #print(href_video)
+            media.append(href_video)
         if len(post_photo) > 0:
             href_photo = (f'https://vk.com{post_photo[0]["href"]}')
-            print(href_photo)
-        #print(href_media)
+            #print(href_photo)
+            media.append(href_photo)
+    print('Media: ', media)
         #media.append(href_media[0].text)
-    '''with open("media.json", "w", encoding="utf-8") as write_file:
-        json.dump(media, write_file, ensure_ascii=None)'''
-parser_of_news("https://vk.com/rhymes")
+    with open("media.json", "w", encoding="utf-8") as write_file:
+        json.dump(media, write_file, ensure_ascii=None)
+#parser_of_news("https://vk.com/rhymes")
