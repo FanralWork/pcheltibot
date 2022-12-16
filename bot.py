@@ -4,6 +4,7 @@ import parsering
 import random
 from telebot import types
 import json
+import youtube_dl
 
 bot = telebot.TeleBot(config.TOKEN)
 
@@ -83,10 +84,14 @@ def Answer(message):
                 with open("media.json", "r", encoding="utf-8") as read_file:
                     news_media = json.load(read_file)
             bot.send_message(message.chat.id, f'{news_title[0].replace("Показать ещё", " ")}', reply_markup=markup2)
-            #if "video" in news_media[0]:
-                #bot.send_video(message.chat.id, "https://youtube.com/shorts/9lyVnzobTYo", reply_markup=markup2)
-            #else:
-            bot.send_photo(message.chat.id, f'{news_media[0]}', reply_markup=markup2)
+            if "video" in news_media[0]:
+                print(news_media[0])
+                ydl_opts = {'username': 'USERNAME', 'password': 'PASSWORD'}
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([news_media[0]], )
+                #bot.send_video(message.chat.id, ydl_opts, reply_markup=markup2)
+            else:
+                bot.send_photo(message.chat.id, f'{news_media[0]}', reply_markup=markup2)
             del news_title[0]
             del news_media[0]
             with open("news.json", "w", encoding="utf-8") as write_file:
