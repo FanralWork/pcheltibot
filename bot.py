@@ -4,7 +4,8 @@ import parsering
 import random
 from telebot import types
 import json
-import youtube_dl
+import yt_dlp
+import os
 
 bot = telebot.TeleBot(config.TOKEN)
 
@@ -86,10 +87,14 @@ def Answer(message):
             bot.send_message(message.chat.id, f'{news_title[0].replace("Показать ещё", " ")}', reply_markup=markup2)
             if "video" in news_media[0]:
                 print(news_media[0])
-                ydl_opts = {'username': 'USERNAME', 'password': 'PASSWORD'}
-                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([news_media[0]], )
-                #bot.send_video(message.chat.id, ydl_opts, reply_markup=markup2)
+                ydl_opts = {'username': '18305212355', 'password': 'pZuwxsOh', 'recode-video': '.mp4'}
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    msg = bot.send_message(message.chat.id, "Идёт отправка видео. Подождите...",reply_markup=markup2)
+                    ydl.download([news_media[0]])
+                    video_name = [_ for _ in os.listdir() if _.endswith(".mp4")]
+                    bot.send_video(message.chat.id, video = open(video_name[0], 'rb'), reply_markup=markup2)
+                    bot.delete_message(message.chat.id, msg.message_id)
+                    os.remove(video_name[0])
             else:
                 bot.send_photo(message.chat.id, f'{news_media[0]}', reply_markup=markup2)
             del news_title[0]
@@ -106,13 +111,15 @@ def Answer(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     try:
-        if call.message:
-            if call.data == 'not_understand':
-                bot.send_message(call.message.chat.id, 'Забей')
-            elif call.data == 'about_about':
-                bot.send_message(call.message.chat.id, 'Да')
+        '''if call.data == 'delete':
+            bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)'''
+        if call.data == 'not_understand':
+            bot.send_message(call.message.chat.id, 'Забей')
+        elif call.data == 'about_about':
+            bot.send_message(call.message.chat.id, 'Да')
 
-            #remote inline buttons
+        # remote inline buttons
+        if call.data == 'not_understand' or call.data == 'about_about':
             bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Сам такой",
                                   reply_markup=None)
 
