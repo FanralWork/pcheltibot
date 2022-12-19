@@ -86,15 +86,21 @@ def Answer(message):
                     news_media = json.load(read_file)
             bot.send_message(message.chat.id, f'{news_title[0].replace("Показать ещё", " ")}', reply_markup=markup2)
             if "video" in news_media[0]:
-                print(news_media[0])
-                ydl_opts = {'username': '18305212355', 'password': 'pZuwxsOh', 'recode-video': '.mp4'}
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    msg = bot.send_message(message.chat.id, "Идёт отправка видео. Подождите...",reply_markup=markup2)
-                    ydl.download([news_media[0]])
-                    video_name = [_ for _ in os.listdir() if _.endswith(".mp4")]
-                    bot.send_video(message.chat.id, video = open(video_name[0], 'rb'), reply_markup=markup2)
-                    bot.delete_message(message.chat.id, msg.message_id)
-                    os.remove(video_name[0])
+                try:
+                    print(news_media[0])
+                    ydl_opts = {'username': '18305212355', 'password': 'pZuwxsOh', 'recode-video': '.mp4'}
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        msg = bot.send_message(message.chat.id, "Идёт отправка видео. Подождите...",reply_markup=markup2)
+                        ydl.download([news_media[0]])
+                        video_name = [_ for _ in os.listdir() if _.endswith(".mp4")]
+                        print(video_name)
+                        bot.send_video(message.chat.id, video = open(video_name[0], 'rb'), reply_markup=markup2)
+                        bot.delete_message(message.chat.id, msg.message_id)
+                        os.remove(video_name[0])
+                except Exception as e:
+                    print('User: ', message.from_user.id, f'\nError: ', repr(e))
+                    bot.send_message(message.chat.id, 'Произошла ошибка. Попробуйте ещё раз...',
+                                     reply_markup=markup2)
             else:
                 bot.send_photo(message.chat.id, f'{news_media[0]}', reply_markup=markup2)
             del news_title[0]
