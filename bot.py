@@ -17,11 +17,11 @@ def welcome(message):
     try:
         #keybord
         markup1 = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        item1 = types.KeyboardButton("Чел ты")
+        #item1 = types.KeyboardButton("Чел ты")
         item2 = types.KeyboardButton("Расскажи анекдот")
         item3 = types.KeyboardButton("Новости")
 
-        markup1.add(item1, item2, item3)
+        markup1.add(item2, item3)
 
         #Hello
         bot.send_message(message.chat.id, "Приветствую, {0.first_name}!\nЯ - <b>{1.first_name}</b>, развлекательно-новостной бот.".format(message.from_user, bot.get_me()),
@@ -40,11 +40,11 @@ def Answer(message):
             bot.send_message(message.chat.id, 'Сам такой', reply_markup=markup1)
         elif message.text == 'Меню' or message.text == 'Назад':
             markup3 = types.ReplyKeyboardMarkup(resize_keyboard=True)
-            item1 = types.KeyboardButton("Чел ты")
+            #item1 = types.KeyboardButton("Чел ты")
             item2 = types.KeyboardButton("Расскажи анекдот")
             item3 = types.KeyboardButton("Новости")
-            markup3.add(item1, item2, item3)
-            bot.send_message(message.chat.id, f"Мои функции: \n- Чел ты \n- Расскажи анекдот \n- Новости", reply_markup=markup3)
+            markup3.add(item2, item3)
+            bot.send_message(message.chat.id, f"Мои функции: \n- Расскажи анекдот \n- Новости", reply_markup=markup3)
         elif message.text == 'Расскажи анекдот' or message.text == 'Расскажи ещё шутку':
             markup2 = types.ReplyKeyboardMarkup(resize_keyboard=True)
             item1 = types.KeyboardButton("Назад")
