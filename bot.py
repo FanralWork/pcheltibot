@@ -10,7 +10,7 @@ import os
 bot = telebot.TeleBot(config.TOKEN)
 
 URL_jokes = 'https://www.anekdot.ru/random/anekdot/'
-URL_news = 'https://vk.com/rhymes'
+URL_common = 'https://vk.com/rhymes'
 
 @bot.message_handler(commands=['start'])
 def welcome(message):
@@ -54,7 +54,7 @@ def Answer(message):
 
             joke_list = parsering.parser_of_jokes(URL_jokes)
             random.shuffle(joke_list)
-            bot.send_message(message.chat.id, f'{joke_list[0]}', reply_markup=markup2)
+            bot.send_message(message.chat.id, f'{joke_list[0]} \n (Источник: {URL_jokes.replace("https://", " ")})', reply_markup=markup2, disable_web_page_preview=True)
             del joke_list[0]
             #for i in range(0,len(joke)):
             #    joke = x[i]
@@ -78,13 +78,15 @@ def Answer(message):
             with open("media.json", "r", encoding="utf-8") as read_file:
                 news_media = json.load(read_file)
             print(len(news_media))
-            if len(news_title) == 0:
-                parsering.parser_of_news("https://vk.com/rhymes")
+            print(news_title["common"][0])
+            if len(news_title["common"]) == 0:
+                parsering.parser_of_news(URL_common)
+                print("Парсинг")
                 with open("news.json", "r", encoding="utf-8") as read_file:
                     news_title = json.load(read_file)
                 with open("media.json", "r", encoding="utf-8") as read_file:
                     news_media = json.load(read_file)
-            bot.send_message(message.chat.id, f'{news_title[0].replace("Показать ещё", " ")}', reply_markup=markup2)
+            bot.send_message(message.chat.id, f'{news_title["common"][0].replace("Показать ещё", " ")} \n- Источник: {URL_common.replace("https://", " ")}', reply_markup=markup2, disable_web_page_preview=True)
             if "video" in news_media[0]:
                 try:
                     print(news_media[0])
@@ -103,7 +105,7 @@ def Answer(message):
                                      reply_markup=markup2)
             else:
                 bot.send_photo(message.chat.id, f'{news_media[0]}', reply_markup=markup2)
-            del news_title[0]
+            del news_title["common"][0]
             del news_media[0]
             with open("news.json", "w", encoding="utf-8") as write_file:
                 json.dump(news_title, write_file, ensure_ascii=None)
