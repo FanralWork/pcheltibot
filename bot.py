@@ -12,6 +12,8 @@ bot = telebot.TeleBot(config.TOKEN)
 URL_jokes = 'https://www.anekdot.ru/random/anekdot/'
 URL_common = 'https://vk.com/rhymes'
 
+global number
+
 @bot.message_handler(commands=['start'])
 def welcome(message):
     try:
@@ -79,14 +81,27 @@ def Answer(message):
                 #news_media = json.load(read_file)
             #print(len(news_media))
             #print(news["common"])
+            #print(str(news["common"]))
+            i=0
+            number = int
+            while i < 5:
+                print(str(news["common"])[2])
+                if str(news["common"])[2] == i:
+                    number = i
+                i = i + 1
             if len(news["common"]) == 0:
                 parsering.parser_of_news(URL_common)
                 with open("news.json", "r", encoding="utf-8") as read_file:
                     news = json.load(read_file)
                 #with open("media.json", "r", encoding="utf-8") as read_file:
                     #news_media = json.load(read_file)
-            print(news["common"]["0"][0])
+            print(news["common"][f'{number}'][0])
+            print(news["common"][f'{number}'][1][0])
             bot.send_message(message.chat.id, f'{news["common"]["0"][0].replace("Показать ещё", " ")} \n- Источник: {URL_common.replace("https://", " ")}', reply_markup=markup2, disable_web_page_preview=True)
+            i=0
+            while i < len(news["common"]["0"][1]):
+                bot.send_photo(message.chat.id, f'{news["common"]["0"][1][i]}', reply_markup=markup2)
+                i+=1
            #if "video" in news_media[0]:
                 #try:
                     #print(news_media[0])
