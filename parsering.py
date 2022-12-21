@@ -9,7 +9,7 @@ post_video = []
 post_img = []
 href_video = []
 href_photo = []
-title = []
+title = ""
 global text
 text = {}
 global media
@@ -32,9 +32,9 @@ def parser_of_news(url):
     content_n = html.find_all("div", class_="wall_item")
     i = 0
     for con_text in content_n:
-        title = []
+        title = ""
         post_text = con_text.find_all("div", class_="pi_text")
-        title.append(post_text[0].text)
+        title = post_text[0].text
         print(title)
         print(i)
         text[i] = title

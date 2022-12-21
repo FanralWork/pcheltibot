@@ -73,44 +73,44 @@ def Answer(message):
             item2 = types.KeyboardButton("Ещё новости")
             markup2.add(item1, item2)
             with open("news.json", "r", encoding="utf-8") as read_file:
-                news_title = json.load(read_file)
-            print(len(news_title))
-            with open("media.json", "r", encoding="utf-8") as read_file:
-                news_media = json.load(read_file)
-            print(len(news_media))
-            print(news_title["common"][0])
-            if len(news_title["common"]) == 0:
+                news = json.load(read_file)
+            print(len(news))
+            #with open("media.json", "r", encoding="utf-8") as read_file:
+                #news_media = json.load(read_file)
+            #print(len(news_media))
+            #print(news["common"])
+            if len(news["common"]) == 0:
                 parsering.parser_of_news(URL_common)
-                print("Парсинг")
                 with open("news.json", "r", encoding="utf-8") as read_file:
-                    news_title = json.load(read_file)
-                with open("media.json", "r", encoding="utf-8") as read_file:
-                    news_media = json.load(read_file)
-            bot.send_message(message.chat.id, f'{news_title["common"][0].replace("Показать ещё", " ")} \n- Источник: {URL_common.replace("https://", " ")}', reply_markup=markup2, disable_web_page_preview=True)
-            if "video" in news_media[0]:
-                try:
-                    print(news_media[0])
-                    ydl_opts = {'username': '18305212355', 'password': 'pZuwxsOh', 'recode-video': '.mp4'}
-                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                        msg = bot.send_message(message.chat.id, "Идёт отправка видео. Подождите...",reply_markup=markup2)
-                        ydl.download([news_media[0]])
-                        video_name = [_ for _ in os.listdir() if _.endswith(".mp4")]
-                        print(video_name)
-                        bot.send_video(message.chat.id, video = open(video_name[0], 'rb'), reply_markup=markup2)
-                        bot.delete_message(message.chat.id, msg.message_id)
-                        os.remove(video_name[0])
-                except Exception as e:
-                    print('User: ', message.from_user.id, f'\nError: ', repr(e))
-                    bot.send_message(message.chat.id, 'Произошла ошибка. Попробуйте ещё раз...',
-                                     reply_markup=markup2)
-            else:
-                bot.send_photo(message.chat.id, f'{news_media[0]}', reply_markup=markup2)
-            del news_title["common"][0]
-            del news_media[0]
-            with open("news.json", "w", encoding="utf-8") as write_file:
-                json.dump(news_title, write_file, ensure_ascii=None)
-            with open("media.json", "w", encoding="utf-8") as write_file:
-                json.dump(news_media, write_file, ensure_ascii=None)
+                    news = json.load(read_file)
+                #with open("media.json", "r", encoding="utf-8") as read_file:
+                    #news_media = json.load(read_file)
+            print(news["common"]["0"][0])
+            bot.send_message(message.chat.id, f'{news["common"]["0"][0].replace("Показать ещё", " ")} \n- Источник: {URL_common.replace("https://", " ")}', reply_markup=markup2, disable_web_page_preview=True)
+           #if "video" in news_media[0]:
+                #try:
+                    #print(news_media[0])
+                    #ydl_opts = {'username': '18305212355', 'password': 'pZuwxsOh', 'recode-video': '.mp4'}
+                    #with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        #msg = bot.send_message(message.chat.id, "Идёт отправка видео. Подождите...",reply_markup=markup2)
+                        #ydl.download([news_media[0]])
+                        #video_name = [_ for _ in os.listdir() if _.endswith(".mp4")]
+                        #print(video_name)
+                        #bot.send_video(message.chat.id, video = open(video_name[0], 'rb'), reply_markup=markup2)
+                        #bot.delete_message(message.chat.id, msg.message_id)
+                        #os.remove(video_name[0])
+                #except Exception as e:
+                    #print('User: ', message.from_user.id, f'\nError: ', repr(e))
+                    #bot.send_message(message.chat.id, 'Произошла ошибка. Попробуйте ещё раз...',
+                                     #reply_markup=markup2)
+            #else:
+                #bot.send_photo(message.chat.id, f'{news_media[0]}', reply_markup=markup2)
+            #del news_title["common"][0]
+            #del news_media[0]
+            #with open("news.json", "w", encoding="utf-8") as write_file:
+                #json.dump(news_title, write_file, ensure_ascii=None)
+            #with open("media.json", "w", encoding="utf-8") as write_file:
+                #json.dump(news_media, write_file, ensure_ascii=None)
         else:
             bot.send_message(message.chat.id, 'Я не знаю такую команду')
     except Exception as e:
