@@ -6,6 +6,7 @@ from telebot import types
 import json
 import yt_dlp
 import os
+import moviepy.editor as mp
 
 bot = telebot.TeleBot(config.TOKEN)
 
@@ -80,10 +81,17 @@ def Answer(message):
             markup2.add(item1, item2, item3)
             with open("news.json", "r", encoding="utf-8") as read_file:
                 news = json.load(read_file)
+                print(news)
             if len(news["common"]) == 0:
                 parsering.parser_of_news(URL_common)
                 with open("news.json", "r", encoding="utf-8") as read_file:
                     news = json.load(read_file)
+                print(news)
+            if len(news["kvantorium"]) == 0:
+                parsering.parser_of_news(URL_kvantorium)
+                with open("news.json", "r", encoding="utf-8") as read_file:
+                    news = json.load(read_file)
+                print(news)
             if message.text == 'Общие новости':
                 type_of_news = "common"
             if message.text == 'Новости Кванториума':
@@ -97,20 +105,27 @@ def Answer(message):
             bot.send_message(message.chat.id, f'{news[type_of_news][str(number)][0].replace("Показать ещё", " ")} \n- Источник: {URL_common.replace("https://", " ")}', reply_markup=markup2, disable_web_page_preview=True)
             i=0
             while i < len(news[type_of_news][str(number)][1]):
+                print(len(news[type_of_news][str(number)][1]))
+                print(news[type_of_news][str(number)][1])
                 if "video" in news[type_of_news][str(number)][1][i]:
                     try:
                         ydl_opts = {'username': '18305212355', 'password': 'pZuwxsOh', 'recode-video': '.mp4'}
                         msg = bot.send_message(message.chat.id, "Идёт отправка видео. Подождите...", reply_markup=markup2)
                         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                             ydl.download(news[type_of_news][str(number)][1][i])
-                            video_name = [_ for _ in os.listdir() if _.endswith(".mp4")]
+                            video_name = [_ for _ in os.listdir() if _.endswith(".mp4") or _.endswith(".mkv")]
                             print(video_name)
-                            bot.send_video(message.chat.id, video=open(video_name[0], 'rb'), reply_markup=markup2)
+                            clip = mp.VideoClip(video_name[0])
+                            clip.write_videofile("video_news.mp4")
+                            #os.rename(video_name[0], "video_news.mp4")
+                            bot.send_video(message.chat.id, video=open("video_news.mp4", 'rb'), reply_markup=markup2)
                             bot.delete_message(message.chat.id, msg.message_id)
                             os.remove(video_name[0])
+                            os.remove("video_news.mp4")
                     except Exception as e:
                         print('User: ', message.from_user.id, f'\nError: ', repr(e))
                         bot.send_message(message.chat.id, 'Произошла ошибка. Попробуйте ещё раз...', reply_markup=markup2)
+                        #os.remove(video_name[0])
                 else:
                     bot.send_photo(message.chat.id, f'{news[type_of_news][str(number)][1][i]}', reply_markup=markup2)
                 i = i + 1
@@ -146,4 +161,4 @@ def callback_inline(call):
     except Exception as e:
         print(repr(e))
 
-bot.polling(none_stop=True)
+bot.polling(none_stop=True, timeout=500)
