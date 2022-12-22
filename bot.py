@@ -84,25 +84,25 @@ def Answer(message):
                 parsering.parser_of_news(URL_common)
                 with open("news.json", "r", encoding="utf-8") as read_file:
                     news = json.load(read_file)
-
             if message.text == 'Общие новости':
                 type_of_news = "common"
+            if message.text == 'Новости Кванториума':
+                type_of_news = "kvantorium"
             i=0
             number=0
             while i < 5:
-                if str(news["common"])[2] == str(i):
+                if str(news[type_of_news])[2] == str(i):
                     number = i
                 i = i + 1
-            bot.send_message(message.chat.id, f'{news["common"][str(number)][0].replace("Показать ещё", " ")} \n- Источник: {URL_common.replace("https://", " ")}', reply_markup=markup2, disable_web_page_preview=True)
+            bot.send_message(message.chat.id, f'{news[type_of_news][str(number)][0].replace("Показать ещё", " ")} \n- Источник: {URL_common.replace("https://", " ")}', reply_markup=markup2, disable_web_page_preview=True)
             i=0
-            while i < len(news["common"][str(number)][1]):
-                #print("Цикл")
-                if "video" in news["common"][str(number)][1][i]:
+            while i < len(news[type_of_news][str(number)][1]):
+                if "video" in news[type_of_news][str(number)][1][i]:
                     try:
                         ydl_opts = {'username': '18305212355', 'password': 'pZuwxsOh', 'recode-video': '.mp4'}
                         msg = bot.send_message(message.chat.id, "Идёт отправка видео. Подождите...", reply_markup=markup2)
                         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                            ydl.download(news["common"][str(number)][1][i])
+                            ydl.download(news[type_of_news][str(number)][1][i])
                             video_name = [_ for _ in os.listdir() if _.endswith(".mp4")]
                             print(video_name)
                             bot.send_video(message.chat.id, video=open(video_name[0], 'rb'), reply_markup=markup2)
@@ -112,11 +112,11 @@ def Answer(message):
                         print('User: ', message.from_user.id, f'\nError: ', repr(e))
                         bot.send_message(message.chat.id, 'Произошла ошибка. Попробуйте ещё раз...', reply_markup=markup2)
                 else:
-                    bot.send_photo(message.chat.id, f'{news["common"][str(number)][1][i]}', reply_markup=markup2)
+                    bot.send_photo(message.chat.id, f'{news[type_of_news][str(number)][1][i]}', reply_markup=markup2)
                 i = i + 1
-            del news["common"][str(number)][0]
-            del news["common"][str(number)][0]
-            del news["common"][str(number)]
+            del news[type_of_news][str(number)][0]
+            del news[type_of_news][str(number)][0]
+            del news[type_of_news][str(number)]
             with open("news.json", "w", encoding="utf-8") as write_file:
                 json.dump(news, write_file, ensure_ascii=None)
         else:

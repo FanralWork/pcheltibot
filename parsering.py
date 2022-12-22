@@ -48,17 +48,20 @@ def parser_of_news(url):
         post_video = img.find_all("a",class_="thumb_link")
         post_photo = img.find_all("a", class_="MediaGrid__interactive")
         if len(post_video) > 0:
-            href_video.append(f'https://vk.com{post_video[0]["href"]}')
-            #print(href_video)
-            #if url == "ttps://vk.com/rhymes":
-            media[i] = href_video
+            c=0
+            while c < len(post_video):
+                href_video.append(f'https://vk.com{post_video[c]["href"]}')
+                media[i] = href_video
+                c+=1
+        #print(href_video)
         if len(post_photo) > 0:
-            href_photo.append(f'https://vk.com{post_photo[0]["href"]}')
-            #print(href_photo)
-            #if url == "ttps://vk.com/rhymes":
-            media[i] = href_photo
+            c = 0
+            while c < len(post_photo):
+                href_photo.append(f'https://vk.com{post_photo[c]["href"]}')
+                media[i] = href_photo
+                c += 1
         i = i + 1
-        #print(i)
+        #print(href_photo)
     #print('Media: ', media, '\nText: ',  text)
         #media.append(href_media[0].text)
     #with open("media.json", "w", encoding="utf-8") as write_file:
@@ -90,4 +93,4 @@ def parser_of_news(url):
         print("Content: ",content)
     with open("news.json", "w", encoding="utf-8") as file:
         json.dump(content, file, ensure_ascii=None)
-#parser_of_news("https://vk.com/rhymes")
+#parser_of_news("https://vk.com/kvantorium62")
