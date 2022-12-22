@@ -11,8 +11,10 @@ bot = telebot.TeleBot(config.TOKEN)
 
 URL_jokes = 'https://www.anekdot.ru/random/anekdot/'
 URL_common = 'https://vk.com/rhymes'
+URL_kvantorium = 'https://vk.com/kvantorium62'
 
 global number
+global news
 
 @bot.message_handler(commands=['start'])
 def welcome(message):
@@ -70,62 +72,60 @@ def Answer(message):
                 #bot.send_message(message.chat.id, parser.list_of_jokes[rand_int])
                 #del parser.list_of_jokes[rand_int]
         elif message.text == 'Новости' or message.text == 'Ещё новости':
+            news = {}
             markup2 = types.ReplyKeyboardMarkup(resize_keyboard=True)
             item1 = types.KeyboardButton("Назад")
             item2 = types.KeyboardButton("Ещё новости")
             markup2.add(item1, item2)
             with open("news.json", "r", encoding="utf-8") as read_file:
                 news = json.load(read_file)
-            print(len(news))
-            #with open("media.json", "r", encoding="utf-8") as read_file:
-                #news_media = json.load(read_file)
-            #print(len(news_media))
-            #print(news["common"])
-            #print(str(news["common"]))
-            i=0
-            number = int
-            while i < 5:
-                print(str(news["common"])[2])
-                if str(news["common"])[2] == i:
-                    number = i
-                i = i + 1
             if len(news["common"]) == 0:
                 parsering.parser_of_news(URL_common)
                 with open("news.json", "r", encoding="utf-8") as read_file:
                     news = json.load(read_file)
+            i=0
+            number=0
+            while i < 5:
+                if str(news["common"])[2] == str(i):
+                    number = i
+                i = i + 1
                 #with open("media.json", "r", encoding="utf-8") as read_file:
                     #news_media = json.load(read_file)
-            print(news["common"][f'{number}'][0])
-            print(news["common"][f'{number}'][1][0])
-            bot.send_message(message.chat.id, f'{news["common"]["0"][0].replace("Показать ещё", " ")} \n- Источник: {URL_common.replace("https://", " ")}', reply_markup=markup2, disable_web_page_preview=True)
+            #print(news["common"][f'{number}'][0])
+            #print(news["common"][f'{number}'][1][0])
+            bot.send_message(message.chat.id, f'{news["common"][str(number)][0].replace("Показать ещё", " ")} \n- Источник: {URL_common.replace("https://", " ")}', reply_markup=markup2, disable_web_page_preview=True)
+            '''del news["common"][str(number)][0]
+            print("Удаление прошло успешно")
+            print(news["common"][str(number)])'''
             i=0
-            while i < len(news["common"]["0"][1]):
-                bot.send_photo(message.chat.id, f'{news["common"]["0"][1][i]}', reply_markup=markup2)
-                i+=1
-           #if "video" in news_media[0]:
-                #try:
-                    #print(news_media[0])
-                    #ydl_opts = {'username': '18305212355', 'password': 'pZuwxsOh', 'recode-video': '.mp4'}
-                    #with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                        #msg = bot.send_message(message.chat.id, "Идёт отправка видео. Подождите...",reply_markup=markup2)
-                        #ydl.download([news_media[0]])
-                        #video_name = [_ for _ in os.listdir() if _.endswith(".mp4")]
-                        #print(video_name)
-                        #bot.send_video(message.chat.id, video = open(video_name[0], 'rb'), reply_markup=markup2)
-                        #bot.delete_message(message.chat.id, msg.message_id)
-                        #os.remove(video_name[0])
-                #except Exception as e:
-                    #print('User: ', message.from_user.id, f'\nError: ', repr(e))
-                    #bot.send_message(message.chat.id, 'Произошла ошибка. Попробуйте ещё раз...',
-                                     #reply_markup=markup2)
-            #else:
-                #bot.send_photo(message.chat.id, f'{news_media[0]}', reply_markup=markup2)
-            #del news_title["common"][0]
-            #del news_media[0]
-            #with open("news.json", "w", encoding="utf-8") as write_file:
-                #json.dump(news_title, write_file, ensure_ascii=None)
-            #with open("media.json", "w", encoding="utf-8") as write_file:
-                #json.dump(news_media, write_file, ensure_ascii=None)
+            while i < len(news["common"][str(number)][1]):
+                #print("Цикл")
+                if "video" in news["common"][str(number)][1][i]:
+                    try:
+                        ydl_opts = {'username': '18305212355', 'password': 'pZuwxsOh', 'recode-video': '.mp4'}
+                        msg = bot.send_message(message.chat.id, "Идёт отправка видео. Подождите...", reply_markup=markup2)
+                        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                            ydl.download(news["common"][str(number)][1][i])
+                            video_name = [_ for _ in os.listdir() if _.endswith(".mp4")]
+                            print(video_name)
+                            bot.send_video(message.chat.id, video=open(video_name[0], 'rb'), reply_markup=markup2)
+                            bot.delete_message(message.chat.id, msg.message_id)
+                            os.remove(video_name[0])
+                    except Exception as e:
+                        print('User: ', message.from_user.id, f'\nError: ', repr(e))
+                        bot.send_message(message.chat.id, 'Произошла ошибка. Попробуйте ещё раз...', reply_markup=markup2)
+                else:
+                    bot.send_photo(message.chat.id, f'{news["common"][str(number)][1][i]}', reply_markup=markup2)
+                i = i + 1
+            del news["common"][str(number)][0]
+            del news["common"][str(number)][0]
+            #print("Удаление прошло успешно")
+            #print(news["common"][str(number)])
+            del news["common"][str(number)]
+            with open("news.json", "w", encoding="utf-8") as write_file:
+                json.dump(news, write_file, ensure_ascii=None)
+            # with open("media.json", "w", encoding="utf-8") as write_file:
+            # json.dump(news_media, write_file, ensure_ascii=None)
         else:
             bot.send_message(message.chat.id, 'Я не знаю такую команду')
     except Exception as e:

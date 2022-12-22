@@ -15,7 +15,7 @@ text = {}
 global media
 media = {}
 global content
-content = {}
+content = {"common":{},"kvantorium":{}}
 
 def parser_of_jokes(url):
     r = requests.get(url)
@@ -24,7 +24,7 @@ def parser_of_jokes(url):
     return [c.text for c in anekdots]
 
 def parser_of_news(url):
-    print(url)
+    #print(url)
     text = {}
     media = {}
     r=requests.get(url)
@@ -35,8 +35,8 @@ def parser_of_news(url):
         title = ""
         post_text = con_text.find_all("div", class_="pi_text")
         title = post_text[0].text
-        print(title)
-        print(i)
+        #print(title)
+        #print(i)
         text[i] = title
         i = i + 1
     #with open("news.json", "w", encoding="utf-8") as write_file:
@@ -49,17 +49,17 @@ def parser_of_news(url):
         post_photo = img.find_all("a", class_="MediaGrid__interactive")
         if len(post_video) > 0:
             href_video.append(f'https://vk.com{post_video[0]["href"]}')
-            print(href_video)
+            #print(href_video)
             #if url == "ttps://vk.com/rhymes":
             media[i] = href_video
         if len(post_photo) > 0:
             href_photo.append(f'https://vk.com{post_photo[0]["href"]}')
-            print(href_photo)
+            #print(href_photo)
             #if url == "ttps://vk.com/rhymes":
             media[i] = href_photo
         i = i + 1
-        print(i)
-    print('Media: ', media, '\nText: ',  text)
+        #print(i)
+    #print('Media: ', media, '\nText: ',  text)
         #media.append(href_media[0].text)
     #with open("media.json", "w", encoding="utf-8") as write_file:
         #json.dump(media, write_file, ensure_ascii=None)
@@ -69,10 +69,25 @@ def parser_of_news(url):
     while i < 5:
         a[i] = text[i],media[i]
         i +=1
-    print("a: ", a)
+    #print("a: ", a)
     if url == "https://vk.com/rhymes":
+        news = {}
+        with open("news.json", "r", encoding="utf-8") as read_file:
+            news = json.load(read_file)
+        print(news)
         content["common"] = a
+        content["kvantorium"] = news["kvantorium"]
         print("Content: ",content)
-    with open("news.json", "w", encoding="utf-8") as write_file:
-        json.dump(content, write_file, ensure_ascii=None)
-#parser_of_news("https://vk.com/rhymes")
+    with open("news.json", "w", encoding="utf-8") as file:
+        json.dump(content, file, ensure_ascii=None)
+    if url == "https://vk.com/kvantorium62":
+        news = {}
+        with open("news.json", "r", encoding="utf-8") as read_file:
+            news = json.load(read_file)
+        print(news)
+        content["common"] = news["common"]
+        content["kvantorium"] = a
+        print("Content: ",content)
+    with open("news.json", "w", encoding="utf-8") as file:
+        json.dump(content, file, ensure_ascii=None)
+parser_of_news("https://vk.com/rhymes")
