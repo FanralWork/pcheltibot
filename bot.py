@@ -71,32 +71,29 @@ def Answer(message):
                 #rand_int=random.randint(1,10)
                 #bot.send_message(message.chat.id, parser.list_of_jokes[rand_int])
                 #del parser.list_of_jokes[rand_int]
-        elif message.text == 'Новости' or message.text == 'Ещё новости':
+        elif message.text == 'Новости' or message.text == 'Общие новости' or message.text == 'Новости Кванториума':
             news = {}
             markup2 = types.ReplyKeyboardMarkup(resize_keyboard=True)
             item1 = types.KeyboardButton("Назад")
-            item2 = types.KeyboardButton("Ещё новости")
-            markup2.add(item1, item2)
+            item2 = types.KeyboardButton("Общие новости")
+            item3 = types.KeyboardButton("Новости Кванториума")
+            markup2.add(item1, item2, item3)
             with open("news.json", "r", encoding="utf-8") as read_file:
                 news = json.load(read_file)
             if len(news["common"]) == 0:
                 parsering.parser_of_news(URL_common)
                 with open("news.json", "r", encoding="utf-8") as read_file:
                     news = json.load(read_file)
+
+            if message.text == 'Общие новости':
+                type_of_news = "common"
             i=0
             number=0
             while i < 5:
                 if str(news["common"])[2] == str(i):
                     number = i
                 i = i + 1
-                #with open("media.json", "r", encoding="utf-8") as read_file:
-                    #news_media = json.load(read_file)
-            #print(news["common"][f'{number}'][0])
-            #print(news["common"][f'{number}'][1][0])
             bot.send_message(message.chat.id, f'{news["common"][str(number)][0].replace("Показать ещё", " ")} \n- Источник: {URL_common.replace("https://", " ")}', reply_markup=markup2, disable_web_page_preview=True)
-            '''del news["common"][str(number)][0]
-            print("Удаление прошло успешно")
-            print(news["common"][str(number)])'''
             i=0
             while i < len(news["common"][str(number)][1]):
                 #print("Цикл")
@@ -119,13 +116,9 @@ def Answer(message):
                 i = i + 1
             del news["common"][str(number)][0]
             del news["common"][str(number)][0]
-            #print("Удаление прошло успешно")
-            #print(news["common"][str(number)])
             del news["common"][str(number)]
             with open("news.json", "w", encoding="utf-8") as write_file:
                 json.dump(news, write_file, ensure_ascii=None)
-            # with open("media.json", "w", encoding="utf-8") as write_file:
-            # json.dump(news_media, write_file, ensure_ascii=None)
         else:
             bot.send_message(message.chat.id, 'Я не знаю такую команду')
     except Exception as e:

@@ -90,4 +90,4 @@ def parser_of_news(url):
         print("Content: ",content)
     with open("news.json", "w", encoding="utf-8") as file:
         json.dump(content, file, ensure_ascii=None)
-parser_of_news("https://vk.com/rhymes")
+#parser_of_news("https://vk.com/rhymes")
