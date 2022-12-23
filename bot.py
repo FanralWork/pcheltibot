@@ -7,6 +7,7 @@ import json
 import yt_dlp
 import os
 import moviepy.editor as mp
+import time
 
 bot = telebot.TeleBot(config.TOKEN)
 
@@ -81,12 +82,12 @@ def Answer(message):
             markup2.add(item1, item2, item3)
             with open("news.json", "r", encoding="utf-8") as read_file:
                 news = json.load(read_file)
-                print(news)
+                #print(news)
             if len(news["common"]) == 0:
                 parsering.parser_of_news(URL_common)
                 with open("news.json", "r", encoding="utf-8") as read_file:
                     news = json.load(read_file)
-                print(news)
+                #print(news)
             if len(news["kvantorium"]) == 0:
                 parsering.parser_of_news(URL_kvantorium)
                 with open("news.json", "r", encoding="utf-8") as read_file:
@@ -105,27 +106,45 @@ def Answer(message):
             bot.send_message(message.chat.id, f'{news[type_of_news][str(number)][0].replace("Показать ещё", " ")} \n- Источник: {URL_common.replace("https://", " ")}', reply_markup=markup2, disable_web_page_preview=True)
             i=0
             while i < len(news[type_of_news][str(number)][1]):
-                print(len(news[type_of_news][str(number)][1]))
-                print(news[type_of_news][str(number)][1])
+                #print(len(news[type_of_news][str(number)][1]))
+                #print(news[type_of_news][str(number)][1])
                 if "video" in news[type_of_news][str(number)][1][i]:
                     try:
-                        ydl_opts = {'username': '18305212355', 'password': 'pZuwxsOh', 'recode-video': '.mp4'}
+                        if len([_ for _ in os.listdir() if _.endswith(".mp4") or _.endswith(".mkv")]) > 0:
+                            os.remove([_ for _ in os.listdir() if _.endswith(".mp4") or _.endswith(".mkv")][0])
+                        ydl_opts = {'username': '18305212355', 'password': 'pZuwxsOh'}
                         msg = bot.send_message(message.chat.id, "Идёт отправка видео. Подождите...", reply_markup=markup2)
                         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                            ydl.download(news[type_of_news][str(number)][1][i])
+                            info = ydl.extract_info(news[type_of_news][str(number)][1][i], download=False)
+                            url = info["webpage_url"]
+                            print(info)
+                            if "youtube.com/watch?" in url:
+                                bot.send_message(message.chat.id, url,
+                                               reply_markup=markup2)
+                            '''ydl.download()
                             video_name = [_ for _ in os.listdir() if _.endswith(".mp4") or _.endswith(".mkv")]
-                            print(video_name)
-                            clip = mp.VideoClip(video_name[0])
+                            print("Video: ",video_name[0])
+                            clip = mp.VideoFileClip(video_name[0])
+                            print("Начало сжатия")
                             clip.write_videofile("video_news.mp4")
+                            print("Сжатие прошло успешно")
                             #os.rename(video_name[0], "video_news.mp4")
                             bot.send_video(message.chat.id, video=open("video_news.mp4", 'rb'), reply_markup=markup2)
                             bot.delete_message(message.chat.id, msg.message_id)
-                            os.remove(video_name[0])
-                            os.remove("video_news.mp4")
+                            try:
+                                os.remove(video_name[0])
+                                os.remove("video_news.mp4")
+                            except Exception as e:
+                                print('User: ', message.from_user.id, f'\nError: Не удалось удалить ', repr(e))
+                                time.sleep(10)
+                                print("Файл для удаления: ", video_name[0])
+                                os.remove("video_news.mp4")
+                                os.remove(video_name[0])'''
                     except Exception as e:
                         print('User: ', message.from_user.id, f'\nError: ', repr(e))
                         bot.send_message(message.chat.id, 'Произошла ошибка. Попробуйте ещё раз...', reply_markup=markup2)
-                        #os.remove(video_name[0])
+                        #if len([_ for _ in os.listdir() if _.endswith(".mp4") or _.endswith(".mkv")]) > 0:
+                            #os.remove([_ for _ in os.listdir() if _.endswith(".mp4") or _.endswith(".mkv")][0])
                 else:
                     bot.send_photo(message.chat.id, f'{news[type_of_news][str(number)][1][i]}', reply_markup=markup2)
                 i = i + 1
