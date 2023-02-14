@@ -18,10 +18,16 @@ global content
 content = {"common":{},"kvantorium":{}}
 
 def parser_of_jokes(url):
+    c = []
     r = requests.get(url)
     soup = b(r.text,'html.parser')
     anekdots = soup.find_all('div',class_='text')
-    return [c.text for c in anekdots]
+    #print(type(anekdots))
+    #print("anekdots: ", anekdots)
+    with open("jokes.json", "w", encoding="utf-8") as file:
+        json.dump([c.text for c in anekdots], file, ensure_ascii=None)
+    #return [c.text for c in anekdots]
+#parser_of_jokes('https://www.anekdot.ru/random/anekdot/')
 
 def parser_of_news(url):
     #print(url)
