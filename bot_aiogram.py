@@ -9,6 +9,7 @@ import os
 URL_jokes = 'https://www.anekdot.ru/random/anekdot/'
 
 token = config.TOKEN
+token_vk = config.Token_vk
 
 bot = Bot(token)
 dp = Dispatcher(bot=bot)
@@ -35,24 +36,47 @@ async def send_message(msg: types.Message):
 
 @dp.message_handler()
 async def send_joke(msg: types.Message):
-    if msg.text == 'Расскажи анекдот':
-        jokes = []
-        with open("jokes.json", "r", encoding="utf-8") as read_file:
-            jokes = json.load(read_file)
-        if len(jokes) == 0:
-            parsering.parser_of_jokes(URL_jokes)
+    try:
+        if msg.text == 'Расскажи анекдот':
+            jokes = []
             with open("jokes.json", "r", encoding="utf-8") as read_file:
                 jokes = json.load(read_file)
-        #print(jokes)
-        with open('BEST_MAT_EVER.txt', 'r', encoding='utf-8') as f_ck:
-            f_ck_list = set([i.rstrip() for i in f_ck])
-        if {i.casefold().translate(str.maketrans('','', string.punctuation)) for i in jokes[0].split(' ')}\
-            .intersection(f_ck_list):
-            
-            await bot.send_message(chat_id=msg.chat.id, text=f'{jokes[0]}\n (Источник: {URL_jokes.replace("https://", " ")})', disable_web_page_preview=True, reply_markup=keyboard1)
+            if len(jokes) == 0:
+                parsering.parser_of_jokes(URL_jokes)
+                with open("jokes.json", "r", encoding="utf-8") as read_file:
+                    jokes = json.load(read_file)
+            #print(jokes)
+            with open('BEST_MAT_EVER.txt', 'r', encoding='Windows-1251') as f_ck:
+                f_ck_list = set([a.rstrip().casefold() for a in f_ck])
+            jokes_split = []
+            jokes_censured = []
+            '''if {i.casefold().translate(str.maketrans('','', string.punctuation)) for i in jokes[0].split(' ')}\
+                .intersection(f_ck_list): '''
+            for i in jokes[0].split(' '):
+                #print(type(jokes_split))
+                jokes_split.append(i)
+                #print(jokes_split)
+            for b in range(0, len(jokes_split)):
+                if jokes_split[b].translate(str.maketrans('','', string.punctuation)).casefold() in f_ck_list:
+                    jokes_split[b] = f'<tg-spoiler>{jokes_split[b][0]}{(len(jokes_split[b]) - 1) * "*"}</tg-spoiler>'
+                jokes_censured.append(jokes_split[b])
+            final_text = ' '.join(jokes_censured)
+            #await bot.send_message(chat_id=msg.chat.id, text=f'<tg-spoiler>{final_text}\n (Источник: {URL_jokes.replace("https://", " ")})</tg-spoiler>', disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
+            await bot.send_message(chat_id=msg.chat.id, text=f'{final_text}\n (Источник: {URL_jokes.replace("https://", " ")})', disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
+            del jokes[0]
+            with open("jokes.json", "w", encoding="utf-8") as file:
+                json.dump(jokes, file, ensure_ascii=None)
+    except Exception as e:
+        print('User: ', msg.from_user.id, f'\nError: ', repr(e))
+        await bot.send_message(msg.chat.id, 'Произошла ошибка. Попробуйте ещё раз...', reply_markup=keyboard1)
         del jokes[0]
-        with open("jokes.json", "w", encoding="utf-8") as file:
-            json.dump(jokes, file, ensure_ascii=None)
+
+@dp.message_handler()
+async def send_message(msg: types.Message):
+    bot_name = await bot.get_me()
+    await msg.answer(f"Приветствую, {msg.from_user.full_name}!\nЯ - <b>{bot_name.first_name}</b>, развлекательно-новостной бот.",
+                     parse_mode="html", reply_markup=keyboard1)
+    await bot.send_sticker(msg.from_user.id, sticker="CAACAgIAAxkBAAEHfLhj1TfnDTXgju-hIIhQ7ssUdAZAdAACwRIAAvXQth0OkELw6I25My0E")
 
 
 @dp.callback_query_handler()
