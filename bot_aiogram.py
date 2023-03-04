@@ -37,7 +37,7 @@ async def send_message(msg: types.Message):
 @dp.message_handler()
 async def send_joke(msg: types.Message):
     try:
-        if msg.text == 'Расскажи анекдот':
+        if msg.text == 'Расскажи анекдот' or msg.text == 'Анекдот':
             jokes = []
             with open("jokes.json", "r", encoding="utf-8") as read_file:
                 jokes = json.load(read_file)

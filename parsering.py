@@ -1,8 +1,11 @@
+import os
 import requests
 import random
 from bs4 import BeautifulSoup as b
 import json
+import config
 
+token_vk = config.Token_vk
 post_text = []
 post_media = []
 post_video = []
@@ -100,3 +103,33 @@ def parser_of_news(url):
     with open("news.json", "w", encoding="utf-8") as file:
         json.dump(content, file, ensure_ascii=None)
 #parser_of_news("https://vk.com/kvantorium62")
+
+def parser_vk(group_name):
+    url = f"https://api.vk.com/method/wall.get?domain={group_name}&count=100&access_token={token_vk}&v=5.131"
+    req = requests.get(url)
+    src = req.json()
+
+    if os.path.exists(f"{group_name}"):
+        None
+    else:
+        os.mkdir(group_name)
+
+    with open (f"{group_name}/{group_name}.json", "w", encoding="utf-8") as file:
+        json.dump(src, file, ensure_ascii=False)
+
+    fresh_posts_id = []
+    post = src["response"]["items"]
+
+    for fresh_posts_id in post:
+        fresh_posts_id = fresh_posts_id["id"]
+        fresh_posts_id.append(fresh_posts_id)
+
+    if not os.path.exists(f"{group_name}/exist_post_{group_name}.txt"):
+        print("Файла с ID постов не существует, создаём файл!")
+        with open(f"{group_name}/exist_post_{group_name}.txt", "w") as file:
+            for item in fresh_posts_id:
+                file.write(str(item) + "\n")
+    else:
+        print("Файл с ID постов найден, начинаем выборку свежих постов!")
+
+parser_vk("rhymes")
