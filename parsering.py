@@ -19,6 +19,8 @@ global media
 media = {}
 global content
 content = {"common":{},"kvantorium":{}}
+src = []
+req = []
 
 def parser_of_jokes(url):
     c = []
@@ -105,7 +107,7 @@ def parser_of_news(url):
 #parser_of_news("https://vk.com/kvantorium62")
 
 def parser_vk(group_name):
-    url = f"https://api.vk.com/method/wall.get?domain={group_name}&count=100&access_token={token_vk}&v=5.131"
+    url = f"https://api.vk.com/method/wall.get?domain={group_name}&count=20&access_token={token_vk}&v=5.131"
     req = requests.get(url)
     src = req.json()
 
@@ -117,7 +119,7 @@ def parser_vk(group_name):
     with open (f"{group_name}/{group_name}.json", "w", encoding="utf-8") as file:
         json.dump(src, file, ensure_ascii=False)
 
-    fresh_posts_id = []
+    """fresh_posts_id = []
     post = src["response"]["items"]
 
     for fresh_posts_id in post:
@@ -130,6 +132,6 @@ def parser_vk(group_name):
             for item in fresh_posts_id:
                 file.write(str(item) + "\n")
     else:
-        print("Файл с ID постов найден, начинаем выборку свежих постов!")
+        print("Файл с ID постов найден, начинаем выборку свежих постов!")"""
 
-parser_vk("rhymes")
+#parser_vk("rhymes")
