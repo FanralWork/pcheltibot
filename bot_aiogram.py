@@ -20,7 +20,7 @@ Button1 = KeyboardButton('Расскажи анекдот')
 keyboard1.add(Button1)
 
 inlinekeyboard1 = InlineKeyboardMarkup()
-inlinebutton1 = InlineKeyboardButton(text='❤️', callback_data='bettercallsaul')
+inlinebutton1 = InlineKeyboardButton(text='❤', callback_data='bettercallsaul')
 inlinekeyboard1.add(inlinebutton1)
 
 async def on_startup(_):
@@ -58,7 +58,8 @@ async def send_joke(msg: types.Message):
                 #print(jokes_split)
             for b in range(0, len(jokes_split)):
                 if jokes_split[b].translate(str.maketrans('','', string.punctuation)).casefold() in f_ck_list:
-                    jokes_split[b] = f'<tg-spoiler>{jokes_split[b][0]}{(len(jokes_split[b]) - 1) * "*"}</tg-spoiler>'
+                    #print(len(jokes_split[b]))
+                    jokes_split[b] = f'<tg-spoiler>{jokes_split[b][0]}{(len(jokes_split[b]) - 2) * "*"}{jokes_split[b][len(jokes_split[b])-1]}</tg-spoiler>'
                 jokes_censured.append(jokes_split[b])
             final_text = ' '.join(jokes_censured)
             #await bot.send_message(chat_id=msg.chat.id, text=f'<tg-spoiler>{final_text}\n (Источник: {URL_jokes.replace("https://", " ")})</tg-spoiler>', disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
