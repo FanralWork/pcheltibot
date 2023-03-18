@@ -77,47 +77,51 @@ async def send_joke(msg: types.Message):
 
 @dp.message_handler(text=['Новости'])
 async def send_news(msg: types.Message):
-    #try:
-    news = []
-    with open("rhymes/rhymes.json", "r", encoding="utf-8") as read_file:
-        news = json.load(read_file)
-    if len(news["response"]["items"]) == 0:
-        parsering.parser_vk(URL_rhymes)
+    try:
+        news = []
         with open("rhymes/rhymes.json", "r", encoding="utf-8") as read_file:
             news = json.load(read_file)
-    #print(jokes)
-    with open('BEST_MAT_EVER.txt', 'r', encoding='Windows-1251') as f_ck:
-        f_ck_list = set([a.rstrip().casefold() for a in f_ck])
-    news_split = []
-    news_censured = []
-    '''if {i.casefold().translate(str.maketrans('','', string.punctuation)) for i in jokes[0].split(' ')}\
-        .intersection(f_ck_list): '''
-    for i in news["response"]["items"][0]["text"].split(' '):
-        #print(type(jokes_split))
-        news_split.append(i)
-        #print(jokes_split)
-    for b in range(0, len(news_split)):
-        if news_split[b].translate(str.maketrans('','', string.punctuation)).casefold() in f_ck_list:
-            #print(len(jokes_split[b]))
-            news_split[b] = f'<tg-spoiler>{news_split[b][0]}{(len(news_split[b]) - 2) * "*"}{news_split[b][len(news_split[b])-1]}</tg-spoiler>'
-        news_censured.append(news_split[b])
-    final_text = ' '.join(news_censured)
-    #await bot.send_message(chat_id=msg.chat.id, text=f'<tg-spoiler>{final_text}\n (Источник: {URL_jokes.replace("https://", " ")})</tg-spoiler>', disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
-    await bot.send_message(chat_id=msg.chat.id, text=f'{final_text}\n (Источник: {URL_rhymes.replace("https://", " ")})', disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
-    a = 0
-    print(len(news["response"]["items"][0]["attachments"]))
-    for a in len(news["response"]["items"][0]["attachments"]):
-        if news["response"]["items"][0]["attachments"][0]["type"] == "photo":
-            await bot.send_photo(chat_id=msg.chat.id, photo = news["response"]["items"][0]["attachments"][0]["photo"]["sizes"][max(["sizes"], key=lambda x: x.height)]["url"])
-    del news["response"]["items"][0]
-    with open("rhymes/rhymes.json", "w", encoding="utf-8") as file:
-        json.dump(news, file, ensure_ascii=None)
+        if len(news["response"]["items"]) == 0:
+            parsering.parser_vk(URL_rhymes)
+            with open("rhymes/rhymes.json", "r", encoding="utf-8") as read_file:
+                news = json.load(read_file)
+        #print(jokes)
+        with open('BEST_MAT_EVER.txt', 'r', encoding='Windows-1251') as f_ck:
+            f_ck_list = set([a.rstrip().casefold() for a in f_ck])
+        news_split = []
+        news_censured = []
+        '''if {i.casefold().translate(str.maketrans('','', string.punctuation)) for i in jokes[0].split(' ')}\
+            .intersection(f_ck_list): '''
+        for i in news["response"]["items"][0]["text"].split(' '):
+            #print(type(jokes_split))
+            news_split.append(i)
+            #print(jokes_split)
+        for b in range(0, len(news_split)):
+            if news_split[b].translate(str.maketrans('','', string.punctuation)).casefold() in f_ck_list:
+                #print(len(jokes_split[b]))
+                news_split[b] = f'<tg-spoiler>{news_split[b][0]}{(len(news_split[b]) - 2) * "*"}{news_split[b][len(news_split[b])-1]}</tg-spoiler>'
+            news_censured.append(news_split[b])
+        final_text = ' '.join(news_censured)
+        #await bot.send_message(chat_id=msg.chat.id, text=f'<tg-spoiler>{final_text}\n (Источник: {URL_jokes.replace("https://", " ")})</tg-spoiler>', disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
+        #await bot.send_message(chat_id=msg.chat.id, text=f'{final_text}\n (Источник: {URL_rhymes.replace("https://", " ")})', disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
+        a = 0
+        media = {}
+        #print(len(news["response"]["items"][0]["attachments"]))
+        for a in range(len(news["response"]["items"][0]["attachments"])):
+            if news["response"]["items"][0]["attachments"][a]["type"] == "photo":
+                #print(news["response"]["items"][0]["attachments"][a]["photo"]["sizes"][-1])
+                media.update(news["response"]["items"][0]["attachments"][a]["photo"]["sizes"][-1]["url"])
+        print(media)
+        await bot.send_media_group(chat_id=msg.chat.id, media= media)
+        del news["response"]["items"][0]
+        with open("rhymes/rhymes.json", "w", encoding="utf-8") as file:
+            json.dump(news, file, ensure_ascii=None)
 
-    '''except Exception as e:
+    except Exception as e:
         print('User: ', msg.from_user.id, f'\nError: ', repr(e))
         await bot.send_message(msg.chat.id, 'Произошла ошибка. Попробуйте ещё раз...', reply_markup=keyboard1)
         await bot.send_sticker(msg.from_user.id, sticker="CAACAgIAAxkBAAEIF29kDIAYLLLdvNARmO2dnMzNCZzzNAACkiMAAmv4yEiZGesZWjzE7S8E")
-        del news["response"]["items"][0]'''
+        del news["response"]["items"][0]
 
 @dp.callback_query_handler()
 async def message_callback(callback: types.CallbackQuery):
