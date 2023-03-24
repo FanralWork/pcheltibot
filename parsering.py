@@ -107,7 +107,7 @@ def parser_of_news(url):
 #parser_of_news("https://vk.com/kvantorium62")
 
 def parser_vk(group_name):
-    url = f"https://api.vk.com/method/wall.get?domain={group_name}&count=20&access_token={token_vk}&v=5.131"
+    url = f"https://api.vk.com/method/wall.get?domain={group_name}&count=100&access_token={token_vk}&v=5.131"
     req = requests.get(url)
     src = req.json()
 
@@ -133,12 +133,14 @@ def parser_vk(group_name):
                 file.write(str(item) + "\n")
     else:
         print("Файл с ID постов найден, начинаем выборку свежих постов!")"""
-def parser_vk_video(video_access_key, video_post_id, video_owner_id):
-    video_get_url = f"https://api.vk.com/method/video.get?videos={video_owner_id}_{video_post_id}_{video_access_key}&access_token={token_vk}&v=5.131"
-    req = requests.get(video_get_url)
-    res = req.json()
-    print(res)
-    video_url = res["response"]["items"][0]["player"]
-    return video_url
+# def parser_vk_video(video_access_key, video_post_id, video_owner_id):
+#     #video_get_url = f"https://api.vk.com/method/video.get?videos={video_owner_id}_{video_post_id}_{video_access_key}&access_token={token_vk}&v=5.131"
+#     video_get_url = f"https://api.vk.com/method/video.get?videos={video_owner_id}_{video_post_id}_{video_access_key}&access_token={token_vk}&v=5.131"
+#     req = requests.get(video_get_url)
+#     res = req.json()
+#     #print(res)
+#     video_url = res["response"]["items"][0]["player"]
+#     print(video_url)
+#     return video_url
 
-parser_vk("rhymes")
+#parser_vk_video("9197df9387f52d49d3", "456360218", "-28905875")'''
