@@ -134,4 +134,4 @@ def parser_vk(group_name):
     else:
         print("Файл с ID постов найден, начинаем выборку свежих постов!")"""
 
-#parser_vk("rhymes")
+parser_vk("rhymes")
