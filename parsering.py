@@ -133,5 +133,12 @@ def parser_vk(group_name):
                 file.write(str(item) + "\n")
     else:
         print("Файл с ID постов найден, начинаем выборку свежих постов!")"""
+def parser_vk_video(video_access_key, video_post_id, video_owner_id):
+    video_get_url = f"https://api.vk.com/method/video.get?videos={video_owner_id}_{video_post_id}_{video_access_key}&access_token={token_vk}&v=5.131"
+    req = requests.get(video_get_url)
+    res = req.json()
+    print(res)
+    video_url = res["response"]["items"][0]["player"]
+    return video_url
 
 parser_vk("rhymes")
