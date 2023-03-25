@@ -119,20 +119,22 @@ def parser_vk(group_name):
     with open (f"{group_name}/{group_name}.json", "w", encoding="utf-8") as file:
         json.dump(src, file, ensure_ascii=False)
 
-    """fresh_posts_id = []
-    post = src["response"]["items"]
+#parser_vk("kvantorium62")
 
-    for fresh_posts_id in post:
-        fresh_posts_id = fresh_posts_id["id"]
-        fresh_posts_id.append(fresh_posts_id)
-
-    if not os.path.exists(f"{group_name}/exist_post_{group_name}.txt"):
-        print("Файла с ID постов не существует, создаём файл!")
-        with open(f"{group_name}/exist_post_{group_name}.txt", "w") as file:
-            for item in fresh_posts_id:
-                file.write(str(item) + "\n")
-    else:
-        print("Файл с ID постов найден, начинаем выборку свежих постов!")"""
+    # fresh_posts_id = []
+    # post = src["response"]["items"]
+    #
+    # for fresh_posts_id in post:
+    #     fresh_posts_id = fresh_posts_id["id"]
+    #     fresh_posts_id.append(fresh_posts_id)
+    #
+    # if not os.path.exists(f"{group_name}/exist_post_{group_name}.txt"):
+    #     print("Файла с ID постов не существует, создаём файл!")
+    #     with open(f"{group_name}/exist_post_{group_name}.txt", "w") as file:
+    #         for item in fresh_posts_id:
+    #             file.write(str(item) + "\n")
+    # else:
+    #     print("Файл с ID постов найден, начинаем выборку свежих постов!")
 # def parser_vk_video(video_access_key, video_post_id, video_owner_id):
 #     #video_get_url = f"https://api.vk.com/method/video.get?videos={video_owner_id}_{video_post_id}_{video_access_key}&access_token={token_vk}&v=5.131"
 #     video_get_url = f"https://api.vk.com/method/video.get?videos={video_owner_id}_{video_post_id}_{video_access_key}&access_token={token_vk}&v=5.131"
