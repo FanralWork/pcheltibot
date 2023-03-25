@@ -106,9 +106,11 @@ async def send_news(msg: types.Message):
         #await bot.send_message(chat_id=msg.chat.id, text=f'{final_text}\n (Источник: {URL_rhymes.replace("https://", " ")})', disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
         a = 0
         b = 0
+        d = 0
         #media = {}
         media = types.MediaGroup()
         video_url = []
+        audio = types.MediaGroup()
         #print(len(news["response"]["items"][0]["attachments"]))
         for a in range(len(news["response"]["items"][0]["attachments"])):
             if news["response"]["items"][0]["attachments"][a]["type"] == "photo":
@@ -126,7 +128,10 @@ async def send_news(msg: types.Message):
                 # media.attach_video(video_url[-1],
                 #                    f'{final_text}\n (Источник: {URL_rhymes.replace("https://", " ")})', parse_mode="html")
                 video_url.append(f"https://vk.com/video{video_owner_id}_{video_post_id}")
-
+            if news["response"]["items"][0]["attachments"][a]["type"] == "audio":
+                audio.attach_audio(news["response"]["items"][0]["attachments"][a]["audio"]["url"],
+                                   f'{news["response"]["items"][0]["attachments"][a]["audio"]["artist"]} - {news["response"]["items"][0]["attachments"][a]["audio"]["title"]}')
+                d = d+1
         #print(len(media))
         #print(media)
         #print(type(media))
@@ -148,14 +153,21 @@ async def send_news(msg: types.Message):
             else:
                 await bot.send_media_group(chat_id=msg.chat.id, media=media)
         else:
-            await bot.send_message(chat_id=msg.chat.id,
-                                   text=f'{final_text}\n (Источник: {URL_rhymes.replace("https://", " ")})',
-                                   disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
-            await bot.send_media_group(chat_id=msg.chat.id, media=media)
-            if len(video_url) > 0:
-                c = 0
-                for c in range(len(video_url)):
-                    await bot.send_message(chat_id=msg.chat.id, video=video_url[c])
+            if b == 0:
+                await bot.send_message(chat_id=msg.chat.id,
+                                       text=f'{final_text}\n (Источник: {URL_rhymes.replace("https://", " ")})',
+                                       disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
+            else:
+                await bot.send_message(chat_id=msg.chat.id,
+                                       text=f'{final_text}\n (Источник: {URL_rhymes.replace("https://", " ")})',
+                                       disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
+                await bot.send_media_group(chat_id=msg.chat.id, media=media)
+                if len(video_url) > 0:
+                    c = 0
+                    for c in range(len(video_url)):
+                        await bot.send_message(chat_id=msg.chat.id, video=video_url[c])
+        if d > 0:
+            await bot.send_media_group(chat_id=msg.chat.id, media=audio)
         '''else:
             if len(video_url) > 0:
                 #await bot.send_video(chat_id=msg.chat.id, video=video_url[0])
