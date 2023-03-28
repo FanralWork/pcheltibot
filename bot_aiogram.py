@@ -21,10 +21,18 @@ Button1 = KeyboardButton('Расскажи анекдот')
 Button2 = KeyboardButton('Новости')
 keyboard1.add(Button1,Button2)
 
-inlinekeyboard1 = InlineKeyboardMarkup(resize_keyboard=True)
-inlinebutton1 = InlineKeyboardButton(text='Общие', callback_data='common')
-inlinebutton2 = InlineKeyboardButton(text='Кванториума', callback_data='kvantorium')
-inlinekeyboard1.add(inlinebutton1, inlinebutton2)
+keyboard2 = ReplyKeyboardMarkup(resize_keyboard=True)
+Button3 = KeyboardButton('Общие')
+Button4 = KeyboardButton('Кванториума')
+Button5 = KeyboardButton('Назад')
+keyboard2.insert(Button3)
+keyboard2.insert(Button4)
+keyboard2.row(Button5)
+
+# inlinekeyboard1 = InlineKeyboardMarkup(resize_keyboard=True)
+# inlinebutton1 = InlineKeyboardButton(text='Общие', callback_data='common')
+# inlinebutton2 = InlineKeyboardButton(text='Кванториума', callback_data='kvantorium')
+# inlinekeyboard1.add(inlinebutton1, inlinebutton2)
 
 async def on_startup(_):
     print("Bot is active!")
@@ -36,6 +44,12 @@ async def send_message(msg: types.Message):
                      parse_mode="html", reply_markup=keyboard1)
     await bot.send_sticker(msg.from_user.id, sticker="CAACAgIAAxkBAAEHfLhj1TfnDTXgju-hIIhQ7ssUdAZAdAACwRIAAvXQth0OkELw6I25My0E")
     await msg.delete()
+
+@dp.message_handler(text=['Меню','Назад'])
+async def menu(msg: types.Message):
+    await bot.send_message(chat_id=msg.chat.id,
+                           text=f"Функционал: \n - Анекдоты, \n - Новости",
+                           disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
 
 @dp.message_handler(text=['Расскажи анекдот'])
 async def send_joke(msg: types.Message):
@@ -79,16 +93,12 @@ async def send_joke(msg: types.Message):
 
 @dp.message_handler(text=['Новости', 'Общие', 'Кванториума'])
 async def send_news(msg: types.Message):
-    await bot.send_message(chat_id=msg.chat.id,
-                           text="Выберите категорию:",
-                           disable_web_page_preview=True, reply_markup=inlinekeyboard1, parse_mode="html")
-    #print(msg.text)
+    # print(msg.text)
     url = str
     if msg.text == "Общие":
         url = URL_rhymes
     if msg.text == "Кванториума":
         url = URL_kvantorium62
-
     if msg.text == "Общие" or msg.text == "Кванториума":
         try:
             news = []
@@ -130,6 +140,20 @@ async def send_news(msg: types.Message):
                     media.attach_photo(news["response"]["items"][0]["attachments"][a]["photo"]["sizes"][-1]["url"],
                                        f'{final_text}\n (Источник: {url.replace("https://", " ")})', parse_mode="html")
                     b=b+1
+
+                    if len(final_text) > 4096:
+                        for x in range(0, len(final_text), 4096):
+                            await bot.send_message(chat_id=msg.chat.id,
+                                                   text=f'{final_text[x:x + 4096]}\n (Источник: {url.replace("https://", " ")})',
+                                                   disable_web_page_preview=True, reply_markup=keyboard2,
+                                                   parse_mode="html")
+                            #bot.send_message(message.chat.id, info[x:x + 4096])
+                    else:
+                        #bot.send_message(message.chat.id, info)
+                        await bot.send_message(chat_id=msg.chat.id,
+                                               text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
+                                               disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
+
                 if news["response"]["items"][0]["attachments"][a]["type"] == "video":
                     #video_access_key = news["response"]["items"][0]["attachments"][a]["video"]["access_key"]
                     video_post_id = news["response"]["items"][0]["attachments"][a]["video"]["id"]
@@ -146,30 +170,57 @@ async def send_news(msg: types.Message):
             #print("send album")
             #print(media)
             #print(b)
+            print(len(final_text))
             if b == 1:
                 # await bot.send_message(chat_id=msg.chat.id,
                 #                        text="https://vk.com/video_ext.php?oid=-28905875&id=456360218&hash=98575d50f515edb4&__ref=vk.api&api_hash=1679693691f3435aac022163a276_GQYDMNZVGI4TMNA",
                 #                        reply_markup=keyboard1, parse_mode="html")
                 if len(video_url) > 0:
                     c=0
+                    #if len(final_text) > 4096:
                     if len(final_text) > 4096:
-
-                    await bot.send_message(chat_id=msg.chat.id,
-                                           text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                                           disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
+                        for x in range(0, len(final_text), 4096):
+                            await bot.send_message(chat_id=msg.chat.id,
+                                                   text=f'{final_text[x:x + 4096]}\n (Источник: {url.replace("https://", " ")})',
+                                                   disable_web_page_preview=True, reply_markup=keyboard2,
+                                                   parse_mode="html")
+                            #bot.send_message(message.chat.id, info[x:x + 4096])
+                    else:
+                        #bot.send_message(message.chat.id, info)
+                        await bot.send_message(chat_id=msg.chat.id,
+                                               text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
+                                               disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
                     for c in range(len(video_url)):
                         await bot.send_message(chat_id=msg.chat.id, text=video_url[c])
                 else:
                     await bot.send_media_group(chat_id=msg.chat.id, media=media)
             else:
                 if b == 0:
-                    await bot.send_message(chat_id=msg.chat.id,
-                                           text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                                           disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
+                    if len(final_text) > 4096:
+                        for x in range(0, len(final_text), 4096):
+                            await bot.send_message(chat_id=msg.chat.id,
+                                                   text=f'{final_text[x:x + 4096]}\n (Источник: {url.replace("https://", " ")})',
+                                                   disable_web_page_preview=True, reply_markup=keyboard2,
+                                                   parse_mode="html")
+                            # bot.send_message(message.chat.id, info[x:x + 4096])
+                    else:
+                        # bot.send_message(message.chat.id, info)
+                        await bot.send_message(chat_id=msg.chat.id,
+                                               text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
+                                               disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
                 else:
-                    await bot.send_message(chat_id=msg.chat.id,
-                                           text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                                           disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
+                    if len(final_text) > 4096:
+                        for x in range(0, len(final_text), 4096):
+                            await bot.send_message(chat_id=msg.chat.id,
+                                                   text=f'{final_text[x:x + 4096]}\n (Источник: {url.replace("https://", " ")})',
+                                                   disable_web_page_preview=True, reply_markup=keyboard2,
+                                                   parse_mode="html")
+                            # bot.send_message(message.chat.id, info[x:x + 4096])
+                    else:
+                        # bot.send_message(message.chat.id, info)
+                        await bot.send_message(chat_id=msg.chat.id,
+                                               text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
+                                               disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
                     await bot.send_media_group(chat_id=msg.chat.id, media=media)
                     if len(video_url) > 0:
                         c = 0
@@ -190,11 +241,16 @@ async def send_news(msg: types.Message):
 
         except Exception as e:
             print('User: ', msg.from_user.id, f'\nError: ', repr(e))
-            await bot.send_message(msg.chat.id, 'Произошла ошибка. Попробуйте ещё раз...', reply_markup=keyboard1)
+            await bot.send_message(msg.chat.id, 'Произошла ошибка. Попробуйте ещё раз...', reply_markup=keyboard2)
             await bot.send_sticker(msg.from_user.id, sticker="CAACAgIAAxkBAAEIF29kDIAYLLLdvNARmO2dnMzNCZzzNAACkiMAAmv4yEiZGesZWjzE7S8E")
             del news["response"]["items"][0]
             with open(f"{url}/{url}.json", "w", encoding="utf-8") as file:
                 json.dump(news, file, ensure_ascii=None)
+
+    else:
+        await bot.send_message(chat_id=msg.chat.id,
+                               text=f"Выберите категорию: \n - Общие, \n - Кванториума",
+                               disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
 
 @dp.callback_query_handler()
 async def message_callback(callback: types.CallbackQuery):
