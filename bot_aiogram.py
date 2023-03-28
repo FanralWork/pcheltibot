@@ -29,10 +29,13 @@ keyboard2.insert(Button3)
 keyboard2.insert(Button4)
 keyboard2.row(Button5)
 
-# inlinekeyboard1 = InlineKeyboardMarkup(resize_keyboard=True)
-# inlinebutton1 = InlineKeyboardButton(text='Общие', callback_data='common')
-# inlinebutton2 = InlineKeyboardButton(text='Кванториума', callback_data='kvantorium')
-# inlinekeyboard1.add(inlinebutton1, inlinebutton2)
+keyboard3 = ReplyKeyboardMarkup(resize_keyboard=True)
+Button6 = KeyboardButton('Случайные')
+Button7 = KeyboardButton('Лучшие сегодня')
+Button8 = KeyboardButton('Назад')
+keyboard2.insert(Button6)
+keyboard2.insert(Button7)
+keyboard2.row(Button8)
 
 async def on_startup(_):
     print("Bot is active!")
@@ -138,26 +141,10 @@ async def send_news(msg: types.Message):
                                            parse_mode="html")
                     b=b+1
                     print(f"Media: {media}")
-
-                    # if len(final_text) > 4096:
-                    #     for x in range(0, len(final_text), 4096):
-                    #         await bot.send_message(chat_id=msg.chat.id,
-                    #                                text=f'{final_text[x:x + 4096]}\n (Источник: {url.replace("https://", " ")})',
-                    #                                disable_web_page_preview=True, reply_markup=keyboard2,
-                    #                                parse_mode="html")
-                    #         #bot.send_message(message.chat.id, info[x:x + 4096])
-                    # else:
-                    #     #bot.send_message(message.chat.id, info)
-                    #     await bot.send_message(chat_id=msg.chat.id,
-                    #                            text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                    #                            disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
-
                 if news["response"]["items"][0]["attachments"][a]["type"] == "video":
                     video_post_id = news["response"]["items"][0]["attachments"][a]["video"]["id"]
                     video_owner_id = news["response"]["items"][0]["attachments"][a]["video"]["owner_id"]
                     video_url.append(f"https://vk.com/video{video_owner_id}_{video_post_id}")
-            #print(len(final_text))
-            #print(media)
             if b == 1:
                 if len(video_url) > 0:
                     c=0
@@ -178,10 +165,10 @@ async def send_news(msg: types.Message):
                                             text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
                                             disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
                     await bot.send_media_group(chat_id=msg.chat.id, media=media)
-                    if len(video_url) > 0:
-                        c = 0
-                        for c in range(len(video_url)):
-                            await bot.send_message(chat_id=msg.chat.id, video=video_url[c])
+                if len(video_url) > 0:
+                    c = 0
+                    for c in range(len(video_url)):
+                        await bot.send_message(chat_id=msg.chat.id, text=video_url[c])
             del news["response"]["items"][0]
             with open(f"{url}/{url}.json", "w", encoding="utf-8") as file:
                 json.dump(news, file, ensure_ascii=None)
@@ -190,9 +177,9 @@ async def send_news(msg: types.Message):
             print('User: ', msg.from_user.id, f'\nError: ', repr(e))
             await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=keyboard2)
             #await bot.send_sticker(msg.from_user.id, sticker="CAACAgIAAxkBAAEIF29kDIAYLLLdvNARmO2dnMzNCZzzNAACkiMAAmv4yEiZGesZWjzE7S8E")
-            # del news["response"]["items"][0]
-            # with open(f"{url}/{url}.json", "w", encoding="utf-8") as file:
-            #     json.dump(news, file, ensure_ascii=None)
+            del news["response"]["items"][0]
+            with open(f"{url}/{url}.json", "w", encoding="utf-8") as file:
+                 json.dump(news, file, ensure_ascii=None)
 
     else:
         await bot.send_message(chat_id=msg.chat.id,
