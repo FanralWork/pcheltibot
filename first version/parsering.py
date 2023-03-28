@@ -98,7 +98,7 @@ def parser_of_news(url):
         news = {}
         with open("news.json", "r", encoding="utf-8") as read_file:
             news = json.load(read_file)
-        #print(news)
+        print(news)
         content["common"] = news["common"]
         content["kvantorium"] = a
         print("Content: ",content)
