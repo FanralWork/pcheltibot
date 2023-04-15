@@ -27,8 +27,6 @@ def parser_of_jokes(url):
     r = requests.get(url)
     soup = b(r.text,'html.parser')
     anekdots = soup.find_all('div',class_='text')
-    #print(type(anekdots))
-    #print("anekdots: ", anekdots)
     with open("jokes.json", "w", encoding="utf-8") as file:
         json.dump([c.text for c in anekdots], file, ensure_ascii=None)
     #return [c.text for c in anekdots]
@@ -118,6 +116,18 @@ def parser_vk(group_name):
 
     with open (f"{group_name}/{group_name}.json", "w", encoding="utf-8") as file:
         json.dump(src, file, ensure_ascii=False)
+
+def parser_facts(url):
+    c = []
+    r = requests.get(url)
+    soup = b(r.text, 'html.parser')
+    # print(soup)
+    facts = soup.find_all('table', class_='text')
+    # with open("facts.json", "w", encoding="utf-8") as file:
+    #     json.dump([c.text for c in facts], file, ensure_ascii=None)
+    return [c.text for c in facts]
+
+# print(parser_facts("https://randstuff.ru/fact/"))
 
 #parser_vk("kvantorium62")
 

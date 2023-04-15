@@ -5,19 +5,23 @@ import config
 import parsering
 import json
 import os
+import random
 
-URL_jokes = 'https://www.anekdot.ru/random/anekdot/'
+#URL_jokes = 'https://www.anekdot.ru/random/anekdot/'
+#URL_jokes = 'https://www.anekdot.ru/'
+URL_facts = 'https://randstuff.ru/fact'
 URL_rhymes = 'rhymes'
 URL_kvantorium62 = 'kvantorium62'
 
 token = config.TOKEN
+#token = config.SPARE_TOKEN
 token_vk = config.Token_vk
-
 bot = Bot(token)
 dp = Dispatcher(bot=bot)
 
 keyboard1 = ReplyKeyboardMarkup(resize_keyboard=True)
-Button1 = KeyboardButton('Расскажи анекдот')
+# Button1 = KeyboardButton('Расскажи анекдот')
+Button1 = KeyboardButton('Интересный факт')
 Button2 = KeyboardButton('Новости')
 keyboard1.add(Button1,Button2)
 
@@ -33,9 +37,9 @@ keyboard3 = ReplyKeyboardMarkup(resize_keyboard=True)
 Button6 = KeyboardButton('Случайные')
 Button7 = KeyboardButton('Лучшие сегодня')
 Button8 = KeyboardButton('Назад')
-keyboard2.insert(Button6)
-keyboard2.insert(Button7)
-keyboard2.row(Button8)
+keyboard3.insert(Button6)
+keyboard3.insert(Button7)
+keyboard3.row(Button8)
 
 async def on_startup(_):
     print("Bot is active!")
@@ -54,43 +58,32 @@ async def menu(msg: types.Message):
                            text=f"Функционал: \n - Анекдоты, \n - Новости",
                            disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
 
-@dp.message_handler(text=['Расскажи анекдот'])
+@dp.message_handler(text=['Интересный факт'])
 async def send_joke(msg: types.Message):
     try:
-        if msg.text == 'Расскажи анекдот':
-            jokes = []
-            with open("jokes.json", "r", encoding="utf-8") as read_file:
-                jokes = json.load(read_file)
-            if len(jokes) == 0:
-                parsering.parser_of_jokes(URL_jokes)
-                with open("jokes.json", "r", encoding="utf-8") as read_file:
-                    jokes = json.load(read_file)
-            #print(jokes)
+        if msg.text == 'Интересный факт':
+            facts = parsering.parser_facts(URL_facts)
             with open('BEST_MAT_EVER.txt', 'r', encoding='Windows-1251') as f_ck:
                 f_ck_list = set([a.rstrip().casefold() for a in f_ck])
-            jokes_split = []
-            jokes_censured = []
-            '''if {i.casefold().translate(str.maketrans('','', string.punctuation)) for i in jokes[0].split(' ')}\
-                .intersection(f_ck_list): '''
-            for i in jokes[0].split(' '):
-                jokes_split.append(i)
-            for b in range(0, len(jokes_split)):
-                if jokes_split[b].translate(str.maketrans('','', string.punctuation)).casefold() in f_ck_list:
-                    jokes_split[b] = f'<tg-spoiler>{jokes_split[b][0]}{(len(jokes_split[b]) - 2) * "*"}{jokes_split[b][len(jokes_split[b])-1]}</tg-spoiler>'
-                jokes_censured.append(jokes_split[b])
-            final_text = ' '.join(jokes_censured)
-            await bot.send_message(chat_id=msg.chat.id, text=f'{final_text}\n (Источник: {URL_jokes.replace("https://", " ")})', disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
-            del jokes[0]
-            with open("jokes.json", "w", encoding="utf-8") as file:
-                json.dump(jokes, file, ensure_ascii=None)
+            facts_split = []
+            facts_censured = []
+            for i in facts[0].split(' '):
+                facts_split.append(i)
+            for b in range(0, len(facts_split)):
+                if facts_split[b].translate(str.maketrans('','', string.punctuation)).casefold() in f_ck_list:
+                    facts_split[b] = f'<tg-spoiler>{facts_split[b][0]}{(len(facts_split[b]) - 2) * "*"}' \
+                                     f'{facts_split[b][len(facts_split[b])-1]}</tg-spoiler>'
+                facts_censured.append(facts_split[b])
+            final_text = ' '.join(facts_censured)
+            await bot.send_message(chat_id=msg.chat.id, text=f'{final_text}\n (Источник: '
+                                                             f'{URL_facts.replace("https://", " ")})',
+                                   disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
+
     except Exception as e:
         print('User: ', msg.from_user.id, f'\nError: ', repr(e))
         await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=keyboard1)
-        await bot.send_sticker(msg.from_user.id,
-                               sticker="CAACAgIAAxkBAAEIF29kDIAYLLLdvNARmO2dnMzNCZzzNAACkiMAAmv4yEiZGesZWjzE7S8E")
-        del jokes[0]
-        with open(f"jokes.json", "w", encoding="utf-8") as file:
-            json.dump(jokes, file, ensure_ascii=None)
+        # await bot.send_sticker(msg.from_user.id,
+        #                        sticker="CAACAgIAAxkBAAEIF29kDIAYLLLdvNARmO2dnMzNCZzzNAACkiMAAmv4yEiZGesZWjzE7S8E")
 
 @dp.message_handler(text=['Новости', 'Общие', 'Кванториума'])
 async def send_news(msg: types.Message):
@@ -112,8 +105,6 @@ async def send_news(msg: types.Message):
                 f_ck_list = set([a.rstrip().casefold() for a in f_ck])
             news_split = []
             news_censured = []
-            '''if {i.casefold().translate(str.maketrans('','', string.punctuation)) for i in jokes[0].split(' ')}\
-                .intersection(f_ck_list): '''
             for i in news["response"]["items"][0]["text"].split(' '):
                 news_split.append(i)
             for b in range(0, len(news_split)):
@@ -126,21 +117,18 @@ async def send_news(msg: types.Message):
             media = types.MediaGroup()
             video_url = []
             caption_photo = final_text
-            print(len(caption_photo))
+            # print(len(caption_photo))
             for a in range(len(news["response"]["items"][0]["attachments"])):
                 if news["response"]["items"][0]["attachments"][a]["type"] == "photo":
                     if len(caption_photo) > 1000:
                         media.attach_photo(news["response"]["items"][0]["attachments"][a]["photo"]["sizes"][-1]["url"],
                                            f'{caption_photo[:900]}...\n (Источник: {url.replace("https://", " ")})')
-                        #for x in range(0,1000):
-                            # media.attach_photo(news["response"]["items"][0]["attachments"][a]["photo"]["sizes"][-1]["url"],
-                            #                     f'{caption_photo[x:x + 1000]}\n (Источник: {url.replace("https://", " ")})')
                     else:
                         media.attach_photo(news["response"]["items"][0]["attachments"][a]["photo"]["sizes"][-1]["url"],
                                            f'{caption_photo}\n (Источник: {url.replace("https://", " ")})',
                                            parse_mode="html")
                     b=b+1
-                    print(f"Media: {media}")
+                    # print(f"Media: {media}")
                 if news["response"]["items"][0]["attachments"][a]["type"] == "video":
                     video_post_id = news["response"]["items"][0]["attachments"][a]["video"]["id"]
                     video_owner_id = news["response"]["items"][0]["attachments"][a]["video"]["owner_id"]
