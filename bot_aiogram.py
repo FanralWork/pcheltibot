@@ -55,7 +55,7 @@ async def send_message(msg: types.Message):
 @dp.message_handler(text=['Меню','Назад'])
 async def menu(msg: types.Message):
     await bot.send_message(chat_id=msg.chat.id,
-                           text=f"Функционал: \n - Анекдоты, \n - Новости",
+                           text=f"Функционал: \n - Интересные факты, \n - Новости",
                            disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
 
 @dp.message_handler(text=['Интересный факт'])
