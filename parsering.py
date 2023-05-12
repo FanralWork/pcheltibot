@@ -116,6 +116,7 @@ def parser_vk(group_name):
 
     with open (f"{group_name}/{group_name}.json", "w", encoding="utf-8") as file:
         json.dump(src, file, ensure_ascii=False)
+# parser_vk("fanral")
 
 def parser_facts(url):
     c = []

@@ -1,11 +1,16 @@
 import string
 from aiogram import Bot, executor, Dispatcher, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.dispatcher.filters.state import StatesGroup, State
+from
 import config
 import parsering
 import json
 import os
 import random
+import sqlite3
+import datetime
 
 #URL_jokes = 'https://www.anekdot.ru/random/anekdot/'
 #URL_jokes = 'https://www.anekdot.ru/'
@@ -13,25 +18,21 @@ URL_facts = 'https://randstuff.ru/fact'
 URL_rhymes = 'rhymes'
 URL_kvantorium62 = 'kvantorium62'
 
-token = config.TOKEN
-#token = config.SPARE_TOKEN
-token_vk = config.Token_vk
+#token = config.TOKEN
+token = config.SPARE_TOKEN
+# token_vk = config.Token_vk
+storage = MemoryStorage()
 bot = Bot(token)
-dp = Dispatcher(bot=bot)
+dp = Dispatcher(bot=bot, storage=storage)
+
+class ProfileStatesGroup(StatesGroup):
+    group_name = State()
 
 keyboard1 = ReplyKeyboardMarkup(resize_keyboard=True)
 # Button1 = KeyboardButton('Расскажи анекдот')
 Button1 = KeyboardButton('Интересный факт')
 Button2 = KeyboardButton('Новости')
 keyboard1.add(Button1,Button2)
-
-keyboard2 = ReplyKeyboardMarkup(resize_keyboard=True)
-Button3 = KeyboardButton('Общие')
-Button4 = KeyboardButton('Кванториума')
-Button5 = KeyboardButton('Назад')
-keyboard2.insert(Button3)
-keyboard2.insert(Button4)
-keyboard2.row(Button5)
 
 keyboard3 = ReplyKeyboardMarkup(resize_keyboard=True)
 Button6 = KeyboardButton('Случайные')
@@ -43,6 +44,10 @@ keyboard3.row(Button8)
 
 async def on_startup(_):
     print("Bot is active!")
+    global db
+    db = sqlite3.connect('DB.db')
+    global cur
+    cur = db.cursor()
 
 @dp.message_handler(commands=["start"])
 async def send_message(msg: types.Message):
@@ -51,6 +56,37 @@ async def send_message(msg: types.Message):
                      parse_mode="html", reply_markup=keyboard1)
     await bot.send_sticker(msg.from_user.id, sticker="CAACAgIAAxkBAAEHfLhj1TfnDTXgju-hIIhQ7ssUdAZAdAACwRIAAvXQth0OkELw6I25My0E")
     await msg.delete()
+
+    # with open("users.json", "r", encoding="utf-8") as read_file:
+    #     users = json.load(read_file)
+    #     # users = db.keys()
+    # print(users)
+    # for a in range(len(users)):
+    #     if (msg.from_user.id == users[f"{a}"]["user_id"]):
+    #         print("Пользователь уже есть")
+    #         break
+    # else:
+    #     print("Новый пользователь")
+    #     users.update({
+    #         len(users): {
+    #             "user_id": msg.from_user.id,
+    #             "full_name": msg.from_user.full_name,
+    #             "user_name": msg.from_user.username
+    #         }
+    #     })
+    #     with open("users.json", "w", encoding="utf-8") as file:
+    #         json.dump(users, file, ensure_ascii=None)
+    cur.execute("SELECT user_id FROM users")
+    items = cur.fetchall()
+    #print(items)
+    result = cur.execute("SELECT user_id FROM users WHERE user_id =?", (msg.from_user.id, ))
+
+    if bool(len(result.fetchall())) == True:
+        print("Пользователь уже есть")
+    else:
+        print("Новый пользователь")
+        cur.execute("INSERT INTO users (id, user_id, full_name, username, join_data) VALUES(?, ?, ?, ?, ?)", (len(items), msg.from_user.id, msg.from_user.full_name, msg.from_user.username, datetime.datetime.now()))
+    db.commit()
 
 @dp.message_handler(text=['Меню','Назад'])
 async def menu(msg: types.Message):
@@ -85,16 +121,37 @@ async def send_joke(msg: types.Message):
         # await bot.send_sticker(msg.from_user.id,
         #                        sticker="CAACAgIAAxkBAAEIF29kDIAYLLLdvNARmO2dnMzNCZzzNAACkiMAAmv4yEiZGesZWjzE7S8E")
 
-@dp.message_handler(text=['Новости', 'Общие', 'Кванториума'])
+@dp.message_handler()
 async def send_news(msg: types.Message):
-    url = str
-    if msg.text == "Общие":
-        url = URL_rhymes
-    if msg.text == "Кванториума":
-        url = URL_kvantorium62
-    if msg.text == "Общие" or msg.text == "Кванториума":
+    user_info = cur.execute("SELECT * FROM users WHERE user_id =?", (msg.from_user.id,))
+    groups = user_info.fetchone()[5]
+    print(groups)
+
+    db.commit()
+
+    keyboard2 = ReplyKeyboardMarkup(resize_keyboard=True)
+    Button3 = KeyboardButton('Общие')
+    Button4 = KeyboardButton('Кванториума')
+    if not(groups) == None:
+        Button6 = KeyboardButton(groups.replace("https://vk.com/", ""))
+    else:
+        Button6 = KeyboardButton("Добавить группу")
+    Button7 = KeyboardButton('Настроить группы')
+    Button5 = KeyboardButton('Назад')
+    keyboard2.insert(Button3)
+    keyboard2.insert(Button4)
+    keyboard2.insert(Button6)
+    keyboard2.row(Button7)
+    keyboard2.row(Button5)
+
+    print(groups.replace("https://vk.com/", ""))
+
+    async def send_content(url):
         try:
+            # print("msg.text == groups.replace")
             news = []
+            if not (os.path.exists(f"{url}/{url}.json")):
+                parsering.parser_vk(url)
             with open(f"{url}/{url}.json", "r", encoding="utf-8") as read_file:
                 news = json.load(read_file)
             if len(news["response"]["items"]) == 0:
@@ -108,8 +165,9 @@ async def send_news(msg: types.Message):
             for i in news["response"]["items"][0]["text"].split(' '):
                 news_split.append(i)
             for b in range(0, len(news_split)):
-                if news_split[b].translate(str.maketrans('','', string.punctuation)).casefold() in f_ck_list:
-                    news_split[b] = f'<tg-spoiler>{news_split[b][0]}{(len(news_split[b]) - 2) * "*"}{news_split[b][len(news_split[b])-1]}</tg-spoiler>'
+                if news_split[b].translate(str.maketrans('', '', string.punctuation)).casefold() in f_ck_list:
+                    news_split[
+                        b] = f'<tg-spoiler>{news_split[b][0]}{(len(news_split[b]) - 2) * "*"}{news_split[b][len(news_split[b]) - 1]}</tg-spoiler>'
                 news_censured.append(news_split[b])
             final_text = ' '.join(news_censured)
             a = 0
@@ -127,7 +185,7 @@ async def send_news(msg: types.Message):
                         media.attach_photo(news["response"]["items"][0]["attachments"][a]["photo"]["sizes"][-1]["url"],
                                            f'{caption_photo}\n (Источник: {url.replace("https://", " ")})',
                                            parse_mode="html")
-                    b=b+1
+                    b = b + 1
                     # print(f"Media: {media}")
                 if news["response"]["items"][0]["attachments"][a]["type"] == "video":
                     video_post_id = news["response"]["items"][0]["attachments"][a]["video"]["id"]
@@ -135,10 +193,10 @@ async def send_news(msg: types.Message):
                     video_url.append(f"https://vk.com/video{video_owner_id}_{video_post_id}")
             if b == 1:
                 if len(video_url) > 0:
-                    c=0
+                    c = 0
                     await bot.send_message(chat_id=msg.chat.id,
-                                            text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                                            disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
+                                           text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
+                                           disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
                     for c in range(len(video_url)):
                         await bot.send_message(chat_id=msg.chat.id, text=video_url[c])
                 else:
@@ -146,12 +204,12 @@ async def send_news(msg: types.Message):
             else:
                 if b == 0:
                     await bot.send_message(chat_id=msg.chat.id,
-                                            text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                                            disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
+                                           text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
+                                           disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
                 else:
                     await bot.send_message(chat_id=msg.chat.id,
-                                            text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                                            disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
+                                           text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
+                                           disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
                     await bot.send_media_group(chat_id=msg.chat.id, media=media)
                 if len(video_url) > 0:
                     c = 0
@@ -163,16 +221,46 @@ async def send_news(msg: types.Message):
 
         except Exception as e:
             print('User: ', msg.from_user.id, f'\nError: ', repr(e))
-            await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=keyboard2)
-            #await bot.send_sticker(msg.from_user.id, sticker="CAACAgIAAxkBAAEIF29kDIAYLLLdvNARmO2dnMzNCZzzNAACkiMAAmv4yEiZGesZWjzE7S8E")
+            await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}',
+                                   reply_markup=keyboard2)
+            # await bot.send_sticker(msg.from_user.id, sticker="CAACAgIAAxkBAAEIF29kDIAYLLLdvNARmO2dnMzNCZzzNAACkiMAAmv4yEiZGesZWjzE7S8E")
             del news["response"]["items"][0]
             with open(f"{url}/{url}.json", "w", encoding="utf-8") as file:
-                 json.dump(news, file, ensure_ascii=None)
+                json.dump(news, file, ensure_ascii=None)
 
-    else:
+    async def group_setting(msg: types.Message):
+        user_info = cur.execute("SELECT * FROM users WHERE user_id =?", (msg.from_user.id,))
+        groups = user_info.fetchone()[5]
+        print(groups)
+
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+        if not (groups) == None:
+            Button6 = KeyboardButton(groups.replace("https://vk.com/", ""))
+        else:
+            Button6 = KeyboardButton("Свободная ячейка")
+        Button5 = KeyboardButton('Назад')
+        keyboard.insert(Button6)
+        keyboard.row(Button5)
+
+        await bot.send_message(msg.chat.id, f'Настройка групп. Выберите настраиваемую ячейку, которую хотите изменить',
+                               reply_markup=keyboard)
+        await ProfileStatesGroup.group_name.set()
+
+    url = str
+    if msg.text == "Общие":
+        await send_content(URL_rhymes)
+    if msg.text == "Кванториума":
+        await send_content(URL_kvantorium62)
+    if not (groups) == None:
+        if msg.text == groups.replace("https://vk.com/", ""):
+            await send_content(groups.replace("https://vk.com/", ""))
+    if msg.text == "Новости":
         await bot.send_message(chat_id=msg.chat.id,
                                text=f"Выберите категорию: \n - Общие, \n - Кванториума",
                                disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
+
+    if msg.text == "Добавить группу" or msg.text == "Настроить группы":
+
 
 @dp.callback_query_handler()
 async def message_callback(callback: types.CallbackQuery):
