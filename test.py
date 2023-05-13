@@ -1,5 +1,5 @@
 # import os
-# import requests
+import requests
 # from bs4 import BeautifulSoup as be
 # import json
 #
@@ -36,18 +36,20 @@ cur = db.cursor()
 #     join_data TEXT
 # )""")
 
-#Добавление данных
-#cur.execute("INSERT INTO users VALUES()")
+# #Добавление данных
+# #cur.execute("INSERT INTO users VALUES()")
+#
+# #Выборка данных
+# cur.execute("SELECT * FROM users")
+# items = print(cur.fetchall())
+#
+# for el in items:
+#     print()
+#
+#
+#
+# db.commit()
+#
+# db.close()
 
-#Выборка данных
-cur.execute("SELECT * FROM users")
-items = print(cur.fetchall())
-
-for el in items:
-    print()
-
-
-
-db.commit()
-
-db.close()
+print(requests.get("https://vk.com/rznnews62"))
