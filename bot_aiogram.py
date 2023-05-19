@@ -12,11 +12,13 @@ import random
 import sqlite3
 import datetime
 import requests
+from keyboards import get_news_keyboard, get_settings_inline_keyboard, get_cancel_keyboard
+from db import BotDB
 
 #URL_jokes = 'https://www.anekdot.ru/random/anekdot/'
 #URL_jokes = 'https://www.anekdot.ru/'
-URL_facts = 'https://randstuff.ru/fact'
-URL_rhymes = 'rhymes'
+# URL_facts = 'https://randstuff.ru/fact'
+# URL_rhymes = 'rhymes'
 URL_kvantorium62 = 'kvantorium62'
 
 token = config.TOKEN
@@ -31,134 +33,29 @@ class ProfileStatesGroup(StatesGroup):
     group_name2 = State()
     group_name3 = State()
 
-keyboard1 = ReplyKeyboardMarkup(resize_keyboard=True)
-# Button1 = KeyboardButton('Расскажи анекдот')
-Button1 = KeyboardButton('Интересный факт')
-Button2 = KeyboardButton('Новости')
-keyboard1.add(Button1,Button2)
-
-# keyboard3 = ReplyKeyboardMarkup(resize_keyboard=True)
-# Button6 = KeyboardButton('Случайные')
-# Button7 = KeyboardButton('Лучшие сегодня')
-# Button8 = KeyboardButton('Назад')
-# keyboard3.insert(Button6)
-# keyboard3.insert(Button7)
-# keyboard3.row(Button8)
+BotDB = BotDB("DB.db")
 
 async def on_startup(_):
     print("Bot is active!")
-    global db
-    db = sqlite3.connect('DB.db')
-    global cur
-    cur = db.cursor()
 
 async def new_user(msg):
-    cur.execute("SELECT user_id FROM users")
-    items = cur.fetchall()
-    # print(items)
-    result = cur.execute("SELECT user_id FROM users WHERE user_id =?", (msg.from_user.id,))
-
-    if bool(len(result.fetchall())) == True:
-        print("Пользователь уже есть")
-    else:
+    if BotDB.user_exists(msg.from_user.id) == False:
+        BotDB.add_user(msg)
         print("Новый пользователь")
-        cur.execute("INSERT INTO users (id, user_id, full_name, username, join_data) VALUES(?, ?, ?, ?, ?)", (
-        len(items), msg.from_user.id, msg.from_user.full_name, msg.from_user.username, datetime.datetime.now()))
-    db.commit()
+
 
 @dp.message_handler(commands=["start"])
 async def send_message(msg: types.Message):
     bot_name = await bot.get_me()
     await msg.answer(f"Приветствую, {msg.from_user.full_name}!\nЯ - <b>{bot_name.first_name}</b>, развлекательно-новостной бот.",
-                     parse_mode="html", reply_markup=keyboard1)
+                     parse_mode="html", reply_markup=get_news_keyboard(msg))
     await bot.send_sticker(msg.from_user.id, sticker="CAACAgIAAxkBAAEHfLhj1TfnDTXgju-hIIhQ7ssUdAZAdAACwRIAAvXQth0OkELw6I25My0E")
     await msg.delete()
     await new_user(msg)
 
-@dp.message_handler(text=['Меню','Назад'])
-async def menu(msg: types.Message):
-    user_info = cur.execute("SELECT * FROM users WHERE user_id =?", (msg.from_user.id,))
-    await bot.send_message(chat_id=msg.chat.id,
-       text=f"Функционал: \n - Интересные факты, \n - Новости",
-       disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
-
-
-@dp.message_handler(text=['Интересный факт'])
-async def send_joke(msg: types.Message):
-    try:
-        if msg.text == 'Интересный факт':
-            facts = parsering.parser_facts(URL_facts)
-            with open('BEST_MAT_EVER.txt', 'r', encoding='Windows-1251') as f_ck:
-                f_ck_list = set([a.rstrip().casefold() for a in f_ck])
-            facts_split = []
-            facts_censured = []
-            for i in facts[0].split(' '):
-                facts_split.append(i)
-            for b in range(0, len(facts_split)):
-                if facts_split[b].translate(str.maketrans('','', string.punctuation)).casefold() in f_ck_list:
-                    facts_split[b] = f'<tg-spoiler>{facts_split[b][0]}{(len(facts_split[b]) - 2) * "*"}' \
-                                     f'{facts_split[b][len(facts_split[b])-1]}</tg-spoiler>'
-                facts_censured.append(facts_split[b])
-            final_text = ' '.join(facts_censured)
-            await bot.send_message(chat_id=msg.chat.id, text=f'{final_text}\n (Источник: '
-                                                             f'{URL_facts.replace("https://", " ")})',
-                                   disable_web_page_preview=True, reply_markup=keyboard1, parse_mode="html")
-
-    except Exception as e:
-        #print('User: ', msg.from_user.id, f'\nError: ', repr(e))
-        await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=keyboard1)
-        # await bot.send_sticker(msg.from_user.id,
-        #                        sticker="CAACAgIAAxkBAAEIF29kDIAYLLLdvNARmO2dnMzNCZzzNAACkiMAAmv4yEiZGesZWjzE7S8E")
-
 @dp.message_handler()
 async def send_news(msg: types.Message):
     await new_user(msg)
-    groups = []
-    user_info = cur.execute("SELECT * FROM users WHERE user_id =?", (msg.from_user.id,))
-    user_groups = user_info.fetchone()
-    group1 = user_groups[5]
-    group2 = user_groups[6]
-    group3 = user_groups[7]
-    # print(group1, group2, group3)
-    groups.append(group1)
-    groups.append(group2)
-    groups.append(group3)
-    # print(groups)
-    db.commit()
-
-    groups_names = []
-    # if not(group1 == None):
-    #     groups_names[0] = group1.replace("https://vk.com/", ""
-    for i in groups:
-        if not (i == None):
-            groups_names.append(i.replace("https://vk.com/", ""))
-    # print(groups_names)
-
-    keyboard2 = ReplyKeyboardMarkup(resize_keyboard=True)
-    Button1 = KeyboardButton('Общие новости')
-    Button2 = KeyboardButton('Новости Кванториума')
-    if not(group1) == None:
-        Button3 = KeyboardButton(group1.replace("https://vk.com/", ""))
-    else:
-        Button3 = KeyboardButton("Добавить группу")
-    if not(group2) == None:
-        Button4 = KeyboardButton(group2.replace("https://vk.com/", ""))
-    else:
-        Button4 = KeyboardButton("Добавить группу")
-    if not(group3) == None:
-        Button5 = KeyboardButton(group3.replace("https://vk.com/", ""))
-    else:
-        Button5 = KeyboardButton("Добавить группу")
-    Button6 = KeyboardButton('Настроить группы')
-    Button7 = KeyboardButton('Назад')
-    keyboard2.insert(Button1)
-    keyboard2.insert(Button2)
-    keyboard2.insert(Button3)
-    keyboard2.insert(Button4)
-    keyboard2.insert(Button5)
-    keyboard2.row(Button6)
-    keyboard2.row(Button7)
-
     async def send_content(url):
         try:
             # print("msg.text == groups.replace")
@@ -209,7 +106,7 @@ async def send_news(msg: types.Message):
                     c = 0
                     await bot.send_message(chat_id=msg.chat.id,
                                            text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                                           disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
+                                           disable_web_page_preview=True, reply_markup=get_news_keyboard(msg), parse_mode="html")
                     for c in range(len(video_url)):
                         await bot.send_message(chat_id=msg.chat.id, text=video_url[c])
                 else:
@@ -218,11 +115,11 @@ async def send_news(msg: types.Message):
                 if b == 0:
                     await bot.send_message(chat_id=msg.chat.id,
                                            text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                                           disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
+                                           disable_web_page_preview=True, reply_markup=get_news_keyboard(msg), parse_mode="html")
                 else:
                     await bot.send_message(chat_id=msg.chat.id,
                                            text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                                           disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
+                                           disable_web_page_preview=True, reply_markup=get_news_keyboard(msg), parse_mode="html")
                     await bot.send_media_group(chat_id=msg.chat.id, media=media)
                 if len(video_url) > 0:
                     c = 0
@@ -235,44 +132,32 @@ async def send_news(msg: types.Message):
         except Exception as e:
             #print('User: ', msg.from_user.id, f'\nError: ', repr(e))
             await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}',
-                                   reply_markup=keyboard2)
+                                   reply_markup=get_news_keyboard(msg))
             # await bot.send_sticker(msg.from_user.id, sticker="CAACAgIAAxkBAAEIF29kDIAYLLLdvNARmO2dnMzNCZzzNAACkiMAAmv4yEiZGesZWjzE7S8E")
             del news["response"]["items"][0]
             with open(f"{url}/{url}.json", "w", encoding="utf-8") as file:
                 json.dump(news, file, ensure_ascii=None)
 
     async def group_setting(msg: types.Message):
-        user_info = cur.execute("SELECT * FROM users WHERE user_id =?", (msg.from_user.id,))
-        groups = user_info.fetchone()
-        group1 = groups[5]
-        group2 = groups[6]
-        group3 = groups[7]
-        print(group1, group2, group3)
-        db.commit()
-
-        keyboard = InlineKeyboardMarkup()
-        if not (group1) == None:
-            Button6 = InlineKeyboardButton(group1.replace("https://vk.com/", ""),  callback_data='user_group1')
-        else:
-            Button6 = InlineKeyboardButton("Свободная ячейка",  callback_data='user_group1')
-        keyboard.row(Button6)
-        if not (group2) == None:
-            Button6 = InlineKeyboardButton(group2.replace("https://vk.com/", ""),  callback_data='user_group2')
-        else:
-            Button6 = InlineKeyboardButton("Свободная ячейка",  callback_data='user_group2')
-        keyboard.row(Button6)
-        if not (group3) == None:
-            Button6 = InlineKeyboardButton(group3.replace("https://vk.com/", ""),  callback_data='user_group3')
-        else:
-            Button6 = InlineKeyboardButton("Свободная ячейка",  callback_data='user_group3')
-        keyboard.row(Button6)
-
         await bot.send_message(msg.chat.id, f'Настройка групп. Выберите настраиваемую ячейку, которую хотите изменить',
-                               reply_markup=keyboard)
+                               reply_markup=get_settings_inline_keyboard(msg))
+
+    groups = []
+    user_groups = BotDB.check_user_group(msg)
+    group1 = user_groups[5]
+    group2 = user_groups[6]
+    group3 = user_groups[7]
+    groups.append(group1)
+    groups.append(group2)
+    groups.append(group3)
+
+    groups_names = []
+    for i in groups:
+        if not (i == None):
+            groups_names.append(i.replace("https://vk.com/", ""))
+    # print(groups_names)
 
     url = str
-    if msg.text == "Общие новости":
-        await send_content(URL_rhymes)
     if msg.text == "Новости Кванториума":
         await send_content(URL_kvantorium62)
     if not (group1) == None:
@@ -284,10 +169,8 @@ async def send_news(msg: types.Message):
     if not (group3) == None:
         if msg.text == group3.replace("https://vk.com/", ""):
             await send_content(group3.replace("https://vk.com/", ""))
-    if msg.text == "Новости":
-        user_info = cur.execute("SELECT * FROM users WHERE user_id =?", (msg.from_user.id,))
-        func_txt = "Новости из: \n - Рифмы и Панчи, \n - Кванториума,"
-        # print(len(groups_names))
+    if msg.text == "Новости" or msg.text == "Назад":
+        func_txt = "Новости из: \n - Кванториума,"
         if len(groups_names) >= 1:
             func_txt = func_txt + "\n - " + groups_names[0] + ","
         if len(groups_names) >= 2:
@@ -296,172 +179,76 @@ async def send_news(msg: types.Message):
             func_txt = func_txt + "\n - " + groups_names[2] + ","
         await bot.send_message(chat_id=msg.chat.id,
                                text=func_txt,
-                               disable_web_page_preview=True, reply_markup=keyboard2, parse_mode="html")
+                               disable_web_page_preview=True, reply_markup=get_news_keyboard(msg), parse_mode="html")
 
     if msg.text == "Добавить группу" or msg.text == "Настроить группы":
         await group_setting(msg)
 
 @dp.message_handler(state=ProfileStatesGroup.group_name1)
 async def add_group(msg: types.Message, state: FSMContext):
-    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    Button1 = KeyboardButton('Назад')
-    keyboard.add(Button1)
-
     vk = 'https://vk.com/'
-
     if msg.text == 'Назад':
         await state.finish()
-        await menu(msg)
+        await send_news(msg)
     else:
-        try:
-            if vk in msg.text and (requests.get(msg.text).status_code == 200):
-                cur.execute("UPDATE users SET user_group1 = (?) WHERE user_id = (?)", (msg.text, msg.from_user.id))
-                db.commit()
-                user_info = cur.execute("SELECT * FROM users WHERE user_id =?", (msg.from_user.id,))
-                user_groups = user_info.fetchone()
-                group1 = user_groups[5]
-                group2 = user_groups[6]
-                group3 = user_groups[7]
-
-                keyboard2 = ReplyKeyboardMarkup(resize_keyboard=True)
-                Button1 = KeyboardButton('Общие новости')
-                Button2 = KeyboardButton('Новости Кванториума')
-                if not (group1) == None:
-                    Button3 = KeyboardButton(group1.replace("https://vk.com/", ""))
-                else:
-                    Button3 = KeyboardButton("Добавить группу")
-                if not (group2) == None:
-                    Button4 = KeyboardButton(group2.replace("https://vk.com/", ""))
-                else:
-                    Button4 = KeyboardButton("Добавить группу")
-                if not (group3) == None:
-                    Button5 = KeyboardButton(group3.replace("https://vk.com/", ""))
-                else:
-                    Button5 = KeyboardButton("Добавить группу")
-                Button6 = KeyboardButton('Настроить группы')
-                Button7 = KeyboardButton('Назад')
-                keyboard2.insert(Button1)
-                keyboard2.insert(Button2)
-                keyboard2.insert(Button3)
-                keyboard2.insert(Button4)
-                keyboard2.insert(Button5)
-                keyboard2.row(Button6)
-                keyboard2.row(Button7)
-                await msg.answer('Группа сохранена!', reply_markup=keyboard2, parse_mode="html")
-                await state.finish()
-            else:
-                await msg.answer("Неверный URl. Поробуйте ещё раз", reply_markup=keyboard, parse_mode="html")
-        except Exception as e:
-            #print('User: ', msg.from_user.id, f'\nError: ', repr(e))
-            await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=keyboard2, parse_mode="html")
+        # try:
+        if vk in msg.text and (requests.get(msg.text).status_code == 200):
+            BotDB.update_user_group("user_group1", msg)
+            user_groups = BotDB.check_user_group(msg)
+            group1 = user_groups[5]
+            group2 = user_groups[6]
+            group3 = user_groups[7]
+            await msg.answer('Группа сохранена!', reply_markup=get_news_keyboard(msg), parse_mode="html")
+            await state.finish()
+        else:
+            await msg.answer("Неверный URl. Поробуйте ещё раз", reply_markup=get_cancel_keyboard(), parse_mode="html")
+        # except Exception as e:
+        #     print('User: ', msg.from_user.id, f'\nError: ', repr(e))
+        #     await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=get_news_keyboard(msg), parse_mode="html")
 
 @dp.message_handler(state=ProfileStatesGroup.group_name2)
 async def add_group(msg: types.Message, state: FSMContext):
-    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    Button1 = KeyboardButton('Назад')
-    keyboard.add(Button1)
-
     vk = 'https://vk.com/'
-
     if msg.text == 'Назад':
         await state.finish()
-        await menu(msg)
+        await send_news(msg)
     else:
         try:
             if vk in msg.text and (requests.get(msg.text).status_code == 200):
-                cur.execute("UPDATE users SET user_group2 = (?) WHERE user_id = (?)", (msg.text, msg.from_user.id))
-                db.commit()
-                user_info = cur.execute("SELECT * FROM users WHERE user_id =?", (msg.from_user.id,))
-                user_groups = user_info.fetchone()
+                BotDB.update_user_group(2, msg)
+                user_groups = BotDB.check_user_group(msg)
                 group1 = user_groups[5]
                 group2 = user_groups[6]
                 group3 = user_groups[7]
-
-                keyboard2 = ReplyKeyboardMarkup(resize_keyboard=True)
-                Button1 = KeyboardButton('Общие новости')
-                Button2 = KeyboardButton('Новости Кванториума')
-                if not (group1) == None:
-                    Button3 = KeyboardButton(group1.replace("https://vk.com/", ""))
-                else:
-                    Button3 = KeyboardButton("Добавить группу")
-                if not (group2) == None:
-                    Button4 = KeyboardButton(group2.replace("https://vk.com/", ""))
-                else:
-                    Button4 = KeyboardButton("Добавить группу")
-                if not (group3) == None:
-                    Button5 = KeyboardButton(group3.replace("https://vk.com/", ""))
-                else:
-                    Button5 = KeyboardButton("Добавить группу")
-                Button6 = KeyboardButton('Настроить группы')
-                Button7 = KeyboardButton('Назад')
-                keyboard2.insert(Button1)
-                keyboard2.insert(Button2)
-                keyboard2.insert(Button3)
-                keyboard2.insert(Button4)
-                keyboard2.insert(Button5)
-                keyboard2.row(Button6)
-                keyboard2.row(Button7)
-                await msg.answer('Группа сохранена!', reply_markup=keyboard2, parse_mode="html")
+                await msg.answer('Группа сохранена!', reply_markup=get_news_keyboard(msg), parse_mode="html")
                 await state.finish()
             else:
-                await msg.answer("Неверный URl. Поробуйте ещё раз", reply_markup=keyboard, parse_mode="html")
+                await msg.answer("Неверный URl. Поробуйте ещё раз", reply_markup=get_cancel_keyboard(), parse_mode="html")
         except Exception as e:
             #print('User: ', msg.from_user.id, f'\nError: ', repr(e))
-            await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=keyboard2, parse_mode="html")
+            await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=get_news_keyboard(msg), parse_mode="html")
 
 @dp.message_handler(state=ProfileStatesGroup.group_name3)
 async def add_group(msg: types.Message, state: FSMContext):
-    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    Button1 = KeyboardButton('Назад')
-    keyboard.add(Button1)
-
     vk = 'https://vk.com/'
-
     if msg.text == 'Назад':
         await state.finish()
-        await menu(msg)
+        await send_news(msg)
     else:
         try:
             if vk in msg.text and (requests.get(msg.text).status_code == 200):
-                cur.execute("UPDATE users SET user_group3 = (?) WHERE user_id = (?)", (msg.text, msg.from_user.id))
-                db.commit()
-                user_info = cur.execute("SELECT * FROM users WHERE user_id =?", (msg.from_user.id,))
-                user_groups = user_info.fetchone()
+                BotDB.update_user_group(3, msg)
+                user_groups = BotDB.check_user_group(msg)
                 group1 = user_groups[5]
                 group2 = user_groups[6]
                 group3 = user_groups[7]
-
-                keyboard2 = ReplyKeyboardMarkup(resize_keyboard=True)
-                Button1 = KeyboardButton('Общие новости')
-                Button2 = KeyboardButton('Новости Кванториума')
-                if not (group1) == None:
-                    Button3 = KeyboardButton(group1.replace("https://vk.com/", ""))
-                else:
-                    Button3 = KeyboardButton("Добавить группу")
-                if not (group2) == None:
-                    Button4 = KeyboardButton(group2.replace("https://vk.com/", ""))
-                else:
-                    Button4 = KeyboardButton("Добавить группу")
-                if not (group3) == None:
-                    Button5 = KeyboardButton(group3.replace("https://vk.com/", ""))
-                else:
-                    Button5 = KeyboardButton("Добавить группу")
-                Button6 = KeyboardButton('Настроить группы')
-                Button7 = KeyboardButton('Назад')
-                keyboard2.insert(Button1)
-                keyboard2.insert(Button2)
-                keyboard2.insert(Button3)
-                keyboard2.insert(Button4)
-                keyboard2.insert(Button5)
-                keyboard2.row(Button6)
-                keyboard2.row(Button7)
-                await msg.answer('Группа сохранена!', reply_markup=keyboard2, parse_mode="html")
+                await msg.answer('Группа сохранена!', reply_markup=get_news_keyboard(msg), parse_mode="html")
                 await state.finish()
             else:
-                await msg.answer("Неверный URl. Поробуйте ещё раз", reply_markup=keyboard, parse_mode="html")
+                await msg.answer("Неверный URl. Поробуйте ещё раз", reply_markup=get_cancel_keyboard(), parse_mode="html")
         except Exception as e:
             #print('User: ', msg.from_user.id, f'\nError: ', repr(e))
-            await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=keyboard2, parse_mode="html")
+            await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=get_news_keyboard(msg), parse_mode="html")
 
 @dp.callback_query_handler()
 async def message_callback(callback: types.CallbackQuery):
