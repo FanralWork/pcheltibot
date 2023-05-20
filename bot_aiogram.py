@@ -12,8 +12,9 @@ import random
 import sqlite3
 import datetime
 import requests
-from keyboards import get_news_keyboard, get_settings_inline_keyboard, get_cancel_keyboard
 from db import BotDB
+from keyboards import BotKeyboards
+import asyncio
 
 #URL_jokes = 'https://www.anekdot.ru/random/anekdot/'
 #URL_jokes = 'https://www.anekdot.ru/'
@@ -34,6 +35,7 @@ class ProfileStatesGroup(StatesGroup):
     group_name3 = State()
 
 BotDB = BotDB("DB.db")
+BotKeyboards = BotKeyboards("DB.db")
 
 async def on_startup(_):
     print("Bot is active!")
@@ -48,7 +50,7 @@ async def new_user(msg):
 async def send_message(msg: types.Message):
     bot_name = await bot.get_me()
     await msg.answer(f"Приветствую, {msg.from_user.full_name}!\nЯ - <b>{bot_name.first_name}</b>, развлекательно-новостной бот.",
-                     parse_mode="html", reply_markup=get_news_keyboard(msg))
+                     parse_mode="html", reply_markup=BotKeyboards.get_news_keyboard(msg))
     await bot.send_sticker(msg.from_user.id, sticker="CAACAgIAAxkBAAEHfLhj1TfnDTXgju-hIIhQ7ssUdAZAdAACwRIAAvXQth0OkELw6I25My0E")
     await msg.delete()
     await new_user(msg)
@@ -58,15 +60,14 @@ async def send_news(msg: types.Message):
     await new_user(msg)
     async def send_content(url):
         try:
-            # print("msg.text == groups.replace")
             news = []
-            if not (os.path.exists(f"{url}/{url}.json")):
+            if not (os.path.exists(f"groups/{url}/{url}.json")):
                 parsering.parser_vk(url)
-            with open(f"{url}/{url}.json", "r", encoding="utf-8") as read_file:
+            with open(f"groups/{url}/{url}.json", "r", encoding="utf-8") as read_file:
                 news = json.load(read_file)
             if len(news["response"]["items"]) == 0:
                 parsering.parser_vk(url)
-                with open(f"{url}/{url}.json", "r", encoding="utf-8") as read_file:
+                with open(f"groups/{url}/{url}.json", "r", encoding="utf-8") as read_file:
                     news = json.load(read_file)
             with open('BEST_MAT_EVER.txt', 'r', encoding='Windows-1251') as f_ck:
                 f_ck_list = set([a.rstrip().casefold() for a in f_ck])
@@ -87,6 +88,8 @@ async def send_news(msg: types.Message):
             caption_photo = final_text
             # print(len(caption_photo))
             for a in range(len(news["response"]["items"][0]["attachments"])):
+                if len(news["response"]["items"][0]["attachments"] <=1:
+                    
                 if news["response"]["items"][0]["attachments"][a]["type"] == "photo":
                     if len(caption_photo) > 1000:
                         media.attach_photo(news["response"]["items"][0]["attachments"][a]["photo"]["sizes"][-1]["url"],
@@ -106,7 +109,7 @@ async def send_news(msg: types.Message):
                     c = 0
                     await bot.send_message(chat_id=msg.chat.id,
                                            text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                                           disable_web_page_preview=True, reply_markup=get_news_keyboard(msg), parse_mode="html")
+                                           disable_web_page_preview=True, reply_markup=BotKeyboards.get_news_keyboard(msg), parse_mode="html")
                     for c in range(len(video_url)):
                         await bot.send_message(chat_id=msg.chat.id, text=video_url[c])
                 else:
@@ -115,32 +118,33 @@ async def send_news(msg: types.Message):
                 if b == 0:
                     await bot.send_message(chat_id=msg.chat.id,
                                            text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                                           disable_web_page_preview=True, reply_markup=get_news_keyboard(msg), parse_mode="html")
+                                           disable_web_page_preview=True, reply_markup=BotKeyboards.get_news_keyboard(msg), parse_mode="html")
                 else:
                     await bot.send_message(chat_id=msg.chat.id,
                                            text=f'{final_text}\n (Источник: {url.replace("https://", " ")})',
-                                           disable_web_page_preview=True, reply_markup=get_news_keyboard(msg), parse_mode="html")
+                                           disable_web_page_preview=True, reply_markup=BotKeyboards.get_news_keyboard(msg), parse_mode="html")
                     await bot.send_media_group(chat_id=msg.chat.id, media=media)
                 if len(video_url) > 0:
                     c = 0
                     for c in range(len(video_url)):
                         await bot.send_message(chat_id=msg.chat.id, text=video_url[c])
+            # print(news["response"]["items"][0])
             del news["response"]["items"][0]
-            with open(f"{url}/{url}.json", "w", encoding="utf-8") as file:
+            with open(f"groups/{url}/{url}.json", "w", encoding="utf-8") as file:
                 json.dump(news, file, ensure_ascii=None)
 
         except Exception as e:
             #print('User: ', msg.from_user.id, f'\nError: ', repr(e))
             await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}',
-                                   reply_markup=get_news_keyboard(msg))
+                                   reply_markup=BotKeyboards.get_news_keyboard(msg))
             # await bot.send_sticker(msg.from_user.id, sticker="CAACAgIAAxkBAAEIF29kDIAYLLLdvNARmO2dnMzNCZzzNAACkiMAAmv4yEiZGesZWjzE7S8E")
             del news["response"]["items"][0]
-            with open(f"{url}/{url}.json", "w", encoding="utf-8") as file:
+            with open(f"groups/{url}/{url}.json", "w", encoding="utf-8") as file:
                 json.dump(news, file, ensure_ascii=None)
 
     async def group_setting(msg: types.Message):
         await bot.send_message(msg.chat.id, f'Настройка групп. Выберите настраиваемую ячейку, которую хотите изменить',
-                               reply_markup=get_settings_inline_keyboard(msg))
+                               reply_markup=BotKeyboards.get_settings_inline_keyboard(msg))
 
     groups = []
     user_groups = BotDB.check_user_group(msg)
@@ -179,7 +183,7 @@ async def send_news(msg: types.Message):
             func_txt = func_txt + "\n - " + groups_names[2] + ","
         await bot.send_message(chat_id=msg.chat.id,
                                text=func_txt,
-                               disable_web_page_preview=True, reply_markup=get_news_keyboard(msg), parse_mode="html")
+                               disable_web_page_preview=True, reply_markup=BotKeyboards.get_news_keyboard(msg), parse_mode="html")
 
     if msg.text == "Добавить группу" or msg.text == "Настроить группы":
         await group_setting(msg)
@@ -187,68 +191,80 @@ async def send_news(msg: types.Message):
 @dp.message_handler(state=ProfileStatesGroup.group_name1)
 async def add_group(msg: types.Message, state: FSMContext):
     vk = 'https://vk.com/'
+    user_groups = BotDB.check_user_group(msg)
+    group1 = user_groups[5]
+    group2 = user_groups[6]
+    group3 = user_groups[7]
     if msg.text == 'Назад':
         await state.finish()
         await send_news(msg)
     else:
-        # try:
-        if vk in msg.text and (requests.get(msg.text).status_code == 200):
-            BotDB.update_user_group("user_group1", msg)
-            user_groups = BotDB.check_user_group(msg)
-            group1 = user_groups[5]
-            group2 = user_groups[6]
-            group3 = user_groups[7]
-            await msg.answer('Группа сохранена!', reply_markup=get_news_keyboard(msg), parse_mode="html")
-            await state.finish()
-        else:
-            await msg.answer("Неверный URl. Поробуйте ещё раз", reply_markup=get_cancel_keyboard(), parse_mode="html")
-        # except Exception as e:
-        #     print('User: ', msg.from_user.id, f'\nError: ', repr(e))
-        #     await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=get_news_keyboard(msg), parse_mode="html")
+        try:
+            if vk in msg.text and (requests.get(msg.text).status_code == 200) and (msg.text != group1) and (msg.text != group2) and (msg.text != group3):
+                BotDB.update_user_group("user_group1", msg)
+                user_groups = BotDB.check_user_group(msg)
+                group1 = user_groups[5]
+                group2 = user_groups[6]
+                group3 = user_groups[7]
+                await msg.answer('Группа сохранена!', reply_markup=BotKeyboards.get_news_keyboard(msg), parse_mode="html")
+                await state.finish()
+            else:
+                await msg.answer("Неверный URl. Поробуйте ещё раз", reply_markup=BotKeyboards.get_cancel_keyboard(), parse_mode="html")
+        except Exception as e:
+            print('User: ', msg.from_user.id, f'\nError: ', repr(e))
+            await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=BotKeyboards.get_news_keyboard(msg), parse_mode="html")
 
 @dp.message_handler(state=ProfileStatesGroup.group_name2)
 async def add_group(msg: types.Message, state: FSMContext):
     vk = 'https://vk.com/'
+    user_groups = BotDB.check_user_group(msg)
+    group1 = user_groups[5]
+    group2 = user_groups[6]
+    group3 = user_groups[7]
     if msg.text == 'Назад':
         await state.finish()
         await send_news(msg)
     else:
         try:
-            if vk in msg.text and (requests.get(msg.text).status_code == 200):
-                BotDB.update_user_group(2, msg)
+            if vk in msg.text and (requests.get(msg.text).status_code == 200) and (msg.text != group1) and (msg.text != group2) and (msg.text != group3):
+                BotDB.update_user_group("user_group2", msg)
                 user_groups = BotDB.check_user_group(msg)
                 group1 = user_groups[5]
                 group2 = user_groups[6]
                 group3 = user_groups[7]
-                await msg.answer('Группа сохранена!', reply_markup=get_news_keyboard(msg), parse_mode="html")
+                await msg.answer('Группа сохранена!', reply_markup=BotKeyboards.get_news_keyboard(msg), parse_mode="html")
                 await state.finish()
             else:
-                await msg.answer("Неверный URl. Поробуйте ещё раз", reply_markup=get_cancel_keyboard(), parse_mode="html")
+                await msg.answer("Неверный URl. Поробуйте ещё раз", reply_markup=BotKeyboards.get_cancel_keyboard(), parse_mode="html")
         except Exception as e:
             #print('User: ', msg.from_user.id, f'\nError: ', repr(e))
-            await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=get_news_keyboard(msg), parse_mode="html")
+            await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=BotKeyboards.get_news_keyboard(msg), parse_mode="html")
 
 @dp.message_handler(state=ProfileStatesGroup.group_name3)
 async def add_group(msg: types.Message, state: FSMContext):
     vk = 'https://vk.com/'
+    user_groups = BotDB.check_user_group(msg)
+    group1 = user_groups[5]
+    group2 = user_groups[6]
+    group3 = user_groups[7]
     if msg.text == 'Назад':
         await state.finish()
         await send_news(msg)
     else:
         try:
-            if vk in msg.text and (requests.get(msg.text).status_code == 200):
-                BotDB.update_user_group(3, msg)
+            if vk in msg.text and (requests.get(msg.text).status_code == 200) and (msg.text != group1) and (msg.text != group2) and (msg.text != group3):
+                BotDB.update_user_group("user_group3", msg)
                 user_groups = BotDB.check_user_group(msg)
                 group1 = user_groups[5]
                 group2 = user_groups[6]
                 group3 = user_groups[7]
-                await msg.answer('Группа сохранена!', reply_markup=get_news_keyboard(msg), parse_mode="html")
+                await msg.answer('Группа сохранена!', reply_markup=BotKeyboards.get_news_keyboard(msg), parse_mode="html")
                 await state.finish()
             else:
-                await msg.answer("Неверный URl. Поробуйте ещё раз", reply_markup=get_cancel_keyboard(), parse_mode="html")
+                await msg.answer("Неверный URl. Поробуйте ещё раз", reply_markup=BotKeyboards.get_cancel_keyboard(), parse_mode="html")
         except Exception as e:
             #print('User: ', msg.from_user.id, f'\nError: ', repr(e))
-            await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=get_news_keyboard(msg), parse_mode="html")
+            await bot.send_message(msg.chat.id, f'Произошла ошибка. Попробуйте ещё раз...\nError: {repr(e)}', reply_markup=BotKeyboards.get_news_keyboard(msg), parse_mode="html")
 
 @dp.callback_query_handler()
 async def message_callback(callback: types.CallbackQuery):
@@ -271,5 +287,13 @@ async def message_callback(callback: types.CallbackQuery):
         await bot.delete_message(chat_id=callback.from_user.id, message_id=callback.message.message_id)
         await ProfileStatesGroup.group_name3.set()
 
+async def scheduled(wait_for):
+  while True:
+    await asyncio.sleep(wait_for)
+
+    print('Время пришло!')
+
 if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    loop.create_task(parsering.delete_groups(3600))
     executor.start_polling(dp, on_startup=on_startup, skip_updates=True)

@@ -23,3 +23,6 @@ class BotDB:
     def update_user_group(self, user_group, msg):
         self.cursor.execute(f"UPDATE users SET {user_group} = (?) WHERE user_id = (?)", (msg.text, msg.from_user.id))
         self.db.commit()
+
+    def close(self):
+        self.db.close()
