@@ -27,19 +27,3 @@ def add_new_id_of_news(group_name, post_id):
     with open (f"id/{group_name}_id.txt", "a", encoding="utf-8") as file:
         file.write(f'\n{post_id},')
         file.close()
-
-# add_new_id_of_news("kvantorium62")
-
-# async def delete_groups(delay_time):
-#     while True:
-#         await asyncio.sleep(delay_time)
-#         folder = f'{os.getcwd()}/groups/'
-#         for filename in os.listdir(folder):
-#             file_path = os.path.join(folder, filename)
-#             try:
-#                 if os.path.isfile(file_path) or os.path.islink(file_path):
-#                     os.unlink(file_path)
-#                 elif os.path.isdir(file_path):
-#                     shutil.rmtree(file_path)
-#             except Exception as e:
-#                 print('Failed to delete %s. Reason: %s' % (file_path, e))
